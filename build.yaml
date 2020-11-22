@@ -61,7 +61,7 @@ jobs:
           {
               $helmChartPath = 'helm/${{ parameters.repo }}'
           }
-          Write-Host "##vso[task.setvariable variable=containerRepository;]$helmChartPath"
+          Write-Host "##vso[task.setvariable variable=helmChartPath;]$helmChartPath"
 
     - task: PowerShell@2
       displayName: Check for tests
