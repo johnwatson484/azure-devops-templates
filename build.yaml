@@ -1,3 +1,9 @@
+trigger:
+- master
+- main
+
+pr: none
+
 resources:
   repositories:
   - repository: helmRepo
