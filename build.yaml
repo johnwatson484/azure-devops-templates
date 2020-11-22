@@ -17,6 +17,7 @@ parameters:
   default: node
 - name: project
   type: string
+  default:
 
 variables:
   testFileExists: false
