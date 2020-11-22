@@ -46,7 +46,7 @@ jobs:
         script: |
           if (!([string]::IsNullOrEmpty(${{ parameters.containerRepository }})))
           {
-              $containerRepository = ${{ parameters.containerRepository }}
+              $containerRepository = '${{ parameters.containerRepository }}'
           }
           else
           {
@@ -55,7 +55,7 @@ jobs:
           Write-Host "##vso[task.setvariable variable=containerRepository;]$containerRepository"
           if (!([string]::IsNullOrEmpty(${{ parameters.helmChartPath }})))
           {
-              $helmChartPath = ${{ parameters.helmChartPath }}
+              $helmChartPath = '${{ parameters.helmChartPath }}'
           }
           else
           {
