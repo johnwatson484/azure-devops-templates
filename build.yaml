@@ -44,22 +44,22 @@ jobs:
       inputs:
         targetType: 'inline'
         script: |
-          if (!([string]::IsNullOrEmpty(${{ parameters.containerRepository }})))
+          if (!([string]::IsNullOrEmpty('${{ parameters.containerRepository }}')))
           {
               $containerRepository = '${{ parameters.containerRepository }}'
           }
           else
           {
-              $containerRepository = johnwatson484/${{ parameters.containerRepository }}
+              $containerRepository = 'johnwatson484/${{ parameters.containerRepository }}'
           }
           Write-Host "##vso[task.setvariable variable=containerRepository;]$containerRepository"
-          if (!([string]::IsNullOrEmpty(${{ parameters.helmChartPath }})))
+          if (!([string]::IsNullOrEmpty('${{ parameters.helmChartPath }}')))
           {
               $helmChartPath = '${{ parameters.helmChartPath }}'
           }
           else
           {
-              $helmChartPath = helm/${{ parameters.helmChartPath }}
+              $helmChartPath = 'helm/${{ parameters.helmChartPath }}'
           }
           Write-Host "##vso[task.setvariable variable=containerRepository;]$helmChartPath"
 
