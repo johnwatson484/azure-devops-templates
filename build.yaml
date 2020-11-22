@@ -13,6 +13,10 @@ resources:
 
 variables:
   testFileExists: false
+  releaseExists: false
+  version:
+  helmRepo: helm-charts
+  helmRepositoryUrl: git@github.com:johnwatson484/helm-charts.git
 
 pool:
   vmImage: 'ubuntu-latest'
