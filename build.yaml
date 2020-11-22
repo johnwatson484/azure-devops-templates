@@ -10,8 +10,10 @@ parameters:
   type: string
 - name: containerRepository
   type: string
+  default:
 - name: helmChartPath
   type: string
+  default:
 - name: framework
   type: string
   default: node
@@ -25,6 +27,8 @@ variables:
   version:
   helmRepo: helm-charts
   helmRepositoryUrl: git@github.com:johnwatson484/helm-charts.git
+  containerRepository:
+  helmChartPath:
 
 jobs:
 - job:
@@ -34,6 +38,30 @@ jobs:
   steps: 
     - checkout: self
       displayName: Clone repository
+
+    - task: PowerShell@2
+      displayName: Set variables
+      inputs:
+        targetType: 'inline'
+        script: |
+          if (!([string]::IsNullOrEmpty(${{ parameters.containerRepository }})))
+          {
+              $containerRepository = ${{ parameters.containerRepository }}
+          }
+          else
+          {
+              $containerRepository = johnwatson484/${{ parameters.containerRepository }}
+          }
+          Write-Host "##vso[task.setvariable variable=containerRepository;]$containerRepository"
+          if (!([string]::IsNullOrEmpty(${{ parameters.helmChartPath }})))
+          {
+              $helmChartPath = ${{ parameters.helmChartPath }}
+          }
+          else
+          {
+              $helmChartPath = helm/${{ parameters.helmChartPath }}
+          }
+          Write-Host "##vso[task.setvariable variable=containerRepository;]$helmChartPath"
 
     - task: PowerShell@2
       displayName: Check for tests
@@ -70,7 +98,7 @@ jobs:
       displayName: Build image
       inputs:
         containerRegistry: 'DockerHub'
-        repository: '${{ parameters.containerRepository }}'
+        repository: '$(containerRepository)'
         command: 'build'
         Dockerfile: '$(Agent.BuildDirectory)/s/${{ parameters.repo }}/Dockerfile'
         tags: |
@@ -83,7 +111,7 @@ jobs:
       displayName: Push image
       inputs:
         containerRegistry: 'DockerHub'
-        repository: '${{ parameters.containerRepository }}'
+        repository: '$(containerRepository)'
         command: 'push'
         tags: |
           $(version)
@@ -91,7 +119,7 @@ jobs:
         addPipelineData: false
 
     - script: |
-        sed -i -e 's/image: .*/image: johnwatson484\/${{ parameters.repo }}:$(version)/' $(Agent.BuildDirectory)/s/${{ parameters.repo }}/${{ parameters.helmChartPath }}/values.yaml
+        sed -i -e 's/image: .*/image: johnwatson484\/${{ parameters.repo }}:$(version)/' $(Agent.BuildDirectory)/s/${{ parameters.repo }}/$(helmChartPath)/values.yaml
       displayName: Update Helm values
     
     - task: HelmInstaller@1
@@ -103,7 +131,7 @@ jobs:
       displayName: Clone Helm repository
 
     - script: |
-        helm package $(Agent.BuildDirectory)/s/${{ parameters.repo }}/${{ parameters.helmChartPath }} --version $(version) --destination $(Agent.BuildDirectory)/s/$(helmRepo) --dependency-update
+        helm package $(Agent.BuildDirectory)/s/${{ parameters.repo }}/$(helmChartPath) --version $(version) --destination $(Agent.BuildDirectory)/s/$(helmRepo) --dependency-update
       displayName: Package Helm
 
     - task: DownloadSecureFile@1
