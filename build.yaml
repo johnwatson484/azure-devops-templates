@@ -11,16 +11,28 @@ resources:
     endpoint: John D Watson
     name: johnwatson484/helm-charts
 
+variables:
+  testFileExists: false
+
 pool:
   vmImage: 'ubuntu-latest'
 
 steps: 
   - checkout: self
     displayName: Clone repository
+
+  - task: PowerShell@2
+    displayName: Check for tests
+    inputs:
+      targetType: 'inline'
+      script: |
+        $fileExists = Test-Path -Path "$(Agent.BuildDirectory)/s/$(repo)/docker-compose.test.yaml"
+        Write-Host "##vso[task.setvariable testFileExists=testFileExists;]$fileExists"
   
   - script: |
       docker-compose -f $(Agent.BuildDirectory)/s/$(repo)/docker-compose.yaml -f $(Agent.BuildDirectory)/s/$(repo)/docker-compose.test.yaml -p $(repo)-test run $(repo)
     displayName: Run tests
+    condition: and(succeeded(), eq(variables.testFileExists, true))
 
   - task: PowerShell@2
     displayName: Set version (Node.js)
