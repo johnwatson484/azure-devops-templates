@@ -41,7 +41,7 @@ jobs:
         targetType: 'inline'
         script: |
           $fileExists = Test-Path -Path "$(Agent.BuildDirectory)/s/${{ parameters.repo }}/docker-compose.test.yaml"
-          Write-Host "##vso[task.setvariable testFileExists=testFileExists;]$fileExists"
+          Write-Host "##vso[task.setvariable variable=testFileExists;]$fileExists"
     
     - script: |
         docker-compose -f $(Agent.BuildDirectory)/s/${{ parameters.repo }}/docker-compose.yaml -f $(Agent.BuildDirectory)/s/${{ parameters.repo }}/docker-compose.test.yaml -p ${{ parameters.repo }}-test run ${{ parameters.repo }}
