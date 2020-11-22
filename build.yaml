@@ -52,7 +52,7 @@ jobs:
         script: |
           $packageVersion = (Get-Content '$(Agent.BuildDirectory)/s/$(repo)/package.json' | ConvertFrom-Json).version
           Write-Host "##vso[task.setvariable variable=version;]$packageVersion"
-      condition: and(succeeded(), eq('${{ parameters.framework }}', "node"))
+      condition: and(succeeded(), eq('${{ parameters.framework }}', 'node'))
 
     - task: PowerShell@2
       displayName: Set version (.NET Core)
@@ -61,7 +61,7 @@ jobs:
         script: |
           $csprojVersion = ([xml](Get-Content '$(Agent.BuildDirectory)/s/$(repo)/$(project)/$(project).csproj')).Project.PropertyGroup.Version
           Write-Host "##vso[task.setvariable variable=version;]$csprojVersion"
-      condition: and(succeeded(), eq('${{ parameters.framework }}', "net"))
+      condition: and(succeeded(), eq('${{ parameters.framework }}', 'net'))
 
     - task: Docker@2
       displayName: Build image
