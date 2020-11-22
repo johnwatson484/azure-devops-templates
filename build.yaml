@@ -50,7 +50,7 @@ jobs:
           }
           else
           {
-              $containerRepository = 'johnwatson484/${{ parameters.containerRepository }}'
+              $containerRepository = 'johnwatson484/${{ parameters.repo }}'
           }
           Write-Host "##vso[task.setvariable variable=containerRepository;]$containerRepository"
           if (!([string]::IsNullOrEmpty('${{ parameters.helmChartPath }}')))
@@ -59,7 +59,7 @@ jobs:
           }
           else
           {
-              $helmChartPath = 'helm/${{ parameters.helmChartPath }}'
+              $helmChartPath = 'helm/${{ parameters.repo }}'
           }
           Write-Host "##vso[task.setvariable variable=containerRepository;]$helmChartPath"
 
