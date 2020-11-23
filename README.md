@@ -6,7 +6,7 @@ Templates for Azure DevOps build pipelines
 Build and package containerised Node.js or .NET applications.
 
 ### Pre-requisites
-- must be Node.js or .NET Core
+- must be Node.js or .NET
 - must use semantic versioning in `package.json` for Node.js and `.csproj` for .NET
 - must have Dockerfile
 - if tests are to be run, `docker-compose.test.yaml` must exist to run tests with exit on complete
