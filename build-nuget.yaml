@@ -35,8 +35,7 @@ jobs:
     - task: DotNetCoreCLI@2
       displayName: Build
       inputs:
-        projects: '$(Parameters.RestoreBuildProjects)'
-        arguments: '--configuration $(BuildConfiguration)'
+        projects: '**/*.sln'
 
     - task: NuGetCommand@2
       displayName: 'NuGet pack'
