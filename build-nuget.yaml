@@ -30,8 +30,7 @@ jobs:
       displayName: Restore
       inputs:
         command: restore
-        projects: '$(Parameters.RestoreBuildProjects)'
-
+        restoreSolution: '**/*.sln'
 
     - task: DotNetCoreCLI@2
       displayName: Build
