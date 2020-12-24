@@ -16,15 +16,13 @@ jobs:
     vmImage: 'ubuntu-latest'
 
   steps:
-    - checkout: self
-      displayName: Clone repository
 
     - task: PowerShell@2
       displayName: Set version
       inputs:
         targetType: 'inline'
         script: |
-          $csprojVersion = ([xml](Get-Content '$(Agent.BuildDirectory)/s/${{ parameters.repo }}/${{ parameters.project }}.csproj')).Project.PropertyGroup.Version
+          $csprojVersion = ([xml](Get-Content '${{ parameters.project }}.csproj')).Project.PropertyGroup.Version
           Write-Host "##vso[task.setvariable variable=version;]$csprojVersion"
 
 
