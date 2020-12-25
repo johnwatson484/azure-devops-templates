@@ -74,3 +74,46 @@ extends:
     repo: my-repo-name
     project: MyProjectName
 ```
+
+## build-nuget.yaml
+
+Build, package and publish NuGet package
+
+### Pre-requisites
+- must use semantic versioning in `.csproj`
+- Azure DevOps must be setup with connections to GitHub and NuGet
+
+### Steps
+- determine version for build assets
+- build package
+- publish package to NuGet tagged with version
+- create GitHub release tagged with version if doesn't already exist
+
+### Usage
+
+Add template repository as a `resource` to an Azure DevOps pipeline definition.  Then add an `extends` section referencing the `build-nuget.yaml` template.
+
+#### Parameters
+- `repo <string>`: name of repository
+
+- `project <string>`: name of the .NET project to build
+
+#### Example (Node.js)
+
+```
+trigger:
+  - main
+
+resources:
+  repositories:
+  - repository: templates
+    type: github
+    endpoint: John D Watson
+    name: johnwatson484/azure-devops-templates
+
+extends:
+  template: build-nuget.yaml@templates
+  parameters:
+    repo: my-repo-name
+    project: MyProjectName
+```
