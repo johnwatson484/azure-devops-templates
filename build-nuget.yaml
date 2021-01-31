@@ -41,7 +41,7 @@ jobs:
         projects: '**/*.sln'
 
     - script: |
-        dotnet pack -c Release --no-build -o $(Build.SourcesDirectory)
+        dotnet pack -c Release --no-build -o $(Agent.BuildDirectory)
       displayName: NuGet pack
 
     - task: NuGetCommand@2
