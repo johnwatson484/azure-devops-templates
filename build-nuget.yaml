@@ -31,7 +31,6 @@ jobs:
       inputs:
         command: restore
         arguments: '--configuration Release'
-        nocache: true
         restoreSolution: '**/*.sln'
 
     - task: DotNetCoreCLI@2
@@ -41,12 +40,9 @@ jobs:
         arguments: '--configuration Release'
         projects: '**/*.sln'
 
-    - task: NuGetCommand@2
-      displayName: 'NuGet pack'
-      inputs:
-        command: pack
-        configuration: 'Release'
-        nobuild: true
+    - script: |
+        dotnet pack -c Release --no-build
+      displayName: NuGet pack
 
     - task: NuGetCommand@2
       displayName: 'NuGet push'
