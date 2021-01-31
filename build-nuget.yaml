@@ -37,12 +37,15 @@ jobs:
       displayName: Build
       inputs:
         command: build
+        configuration: 'Release'
         projects: '**/*.sln'
 
     - task: NuGetCommand@2
       displayName: 'NuGet pack'
       inputs:
         command: pack
+        configuration: 'Release'
+        nobuild: true
 
     - task: NuGetCommand@2
       displayName: 'NuGet push'
