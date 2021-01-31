@@ -30,6 +30,7 @@ jobs:
       displayName: Restore
       inputs:
         command: restore
+        arguments: '--configuration Release'
         nocache: true
         restoreSolution: '**/*.sln'
 
@@ -37,7 +38,7 @@ jobs:
       displayName: Build
       inputs:
         command: build
-        configuration: 'Release'
+        arguments: '--configuration Release'
         projects: '**/*.sln'
 
     - task: NuGetCommand@2
