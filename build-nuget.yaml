@@ -25,27 +25,12 @@ jobs:
           $csprojVersion = ([xml](Get-Content '${{ parameters.project }}/${{ parameters.project }}.csproj')).Project.PropertyGroup.Version
           Write-Host "##vso[task.setvariable variable=version;]$csprojVersion"
 
-
-    - task: DotNetCoreCLI@2
-      displayName: Restore
-      inputs:
-        command: restore
-        arguments: '--configuration Release'
-        restoreSolution: '**/*.sln'
-
-    - task: DotNetCoreCLI@2
-      displayName: Build
-      inputs:
-        command: build
-        arguments: '--configuration Release'
-        projects: '**/*.sln'
-
     - task: NuGetCommand@2
       displayName: 'NuGet pack'
       inputs:
         command: pack
+        noCache: true
         arguments: '--configuration Release'
-        nobuild: true
 
     - task: NuGetCommand@2
       displayName: 'NuGet push'
