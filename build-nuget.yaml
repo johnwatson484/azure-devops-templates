@@ -30,17 +30,21 @@ jobs:
       displayName: Restore
       inputs:
         command: restore
+        arguments: '--configuration Release'
         restoreSolution: '**/*.sln'
 
     - task: DotNetCoreCLI@2
       displayName: Build
       inputs:
+        arguments: '--configuration Release'
         projects: '**/*.sln'
 
     - task: NuGetCommand@2
       displayName: 'NuGet pack'
       inputs:
         command: pack
+        arguments: '--configuration Release'
+        nobuild: true
 
     - task: NuGetCommand@2
       displayName: 'NuGet push'
@@ -48,6 +52,7 @@ jobs:
         command: push
         nuGetFeedType: external
         publishFeedCredentials: NuGet
+        allowPackageConflicts: true
 
     - task: PowerShell@2
       displayName: Check GitHub release
