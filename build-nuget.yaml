@@ -41,7 +41,7 @@ jobs:
         projects: '**/*.sln'
 
     - script: |
-        dotnet pack -c Release --no-build -o $(Agent.BuildDirectory)
+        dotnet pack -c Release --no-build -o $(Build.ArtifactStagingDirectory)
       displayName: NuGet pack
 
     - task: NuGetCommand@2
@@ -50,6 +50,7 @@ jobs:
         command: push
         nuGetFeedType: external
         publishFeedCredentials: NuGet
+        packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg'
 
     - task: PowerShell@2
       displayName: Check GitHub release
