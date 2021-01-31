@@ -36,6 +36,7 @@ jobs:
     - task: DotNetCoreCLI@2
       displayName: Build
       inputs:
+        command: build
         arguments: '--configuration Release'
         projects: '**/*.sln'
 
