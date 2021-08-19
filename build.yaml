@@ -17,18 +17,29 @@ parameters:
 - name: framework
   type: string
   default: node
+- name: sonarcloud
+  type: boolean
+  default: true
 - name: project
   type: string
   default:
 
 variables:
-  testFileExists: false
-  releaseExists: false
-  version:
-  helmRepo: helm-charts
-  helmRepositoryUrl: git@github.com:johnwatson484/helm-charts.git
-  containerRepository:
-  helmChartPath:
+  - group: SonarCloud
+  - name: testFileExists
+    value: false
+  - name: releaseExists
+    value: false
+  - name: version
+    value:
+  - name: helmRepo
+    value: helm-charts
+  - name: helmRepositoryUrl
+    value: git@github.com:johnwatson484/helm-charts.git
+  - name: containerRepository
+    value:
+  - name: helmChartPath
+    value:
 
 jobs:
 - job:
@@ -157,6 +168,16 @@ jobs:
         git commit -m "${{ parameters.repo }} updated by Azure DevOps"
         git push origin HEAD:master
       displayName: Update Helm repo
+
+    - script: |
+        cd $(Agent.BuildDirectory)/s/${{ parameters.repo }}
+        docker run \
+          -v $(pwd)/:/home/dotnet/project \
+          -e SONAR_PROJECT_KEY=johnwatson484_${{ parameters.repo }} \
+          -e SONAR_TOKEN=$(token) \
+          defradigital/ffc-dotnet-core-sonar
+      displayName: SonarCloud analysis (.NET)
+      condition: and(succeeded(), eq('${{ parameters.framework }}', 'net'), eq('${{ parameters.sonarcloud }}', true))
 
     - task: PowerShell@2
       displayName: Check GitHub release
