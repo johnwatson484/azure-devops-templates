@@ -175,7 +175,7 @@ jobs:
           -v $(pwd)/:/home/dotnet/project \
           -e SONAR_PROJECT_KEY=johnwatson484_${{ parameters.repo }} \
           -e SONAR_TOKEN=$(token) \
-          -e SONAR_ORGANIZAION_KEY=johnwatson484
+          -e SONAR_ORGANIZAION_KEY=johnwatson484 \
           defradigital/ffc-dotnet-core-sonar:1.2.2
       displayName: SonarCloud analysis (.NET)
       condition: and(succeeded(), eq('${{ parameters.framework }}', 'net'), eq('${{ parameters.sonarcloud }}', true))
