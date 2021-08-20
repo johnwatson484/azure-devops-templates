@@ -70,17 +70,6 @@ jobs:
         allowPackageConflicts: true
         packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg'
 
-    - script: |
-        cd $(Agent.BuildDirectory)/s/${{ parameters.repo }}
-        docker run \
-          -v $(pwd)/:/home/dotnet/project \
-          -e SONAR_PROJECT_KEY=johnwatson484_${{ parameters.repo }} \
-          -e SONAR_TOKEN=$(token) \
-          -e SONAR_ORGANIZATION_KEY=johnwatson484 \
-          defradigital/ffc-dotnet-core-sonar:1.2.3-dotnet3.1
-      displayName: SonarCloud analysis (.NET)
-      condition: and(succeeded(), eq('${{ parameters.sonarcloud }}', true))
-
     - task: PowerShell@2
       displayName: Check GitHub release
       inputs:
