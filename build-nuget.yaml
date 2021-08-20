@@ -67,7 +67,7 @@ jobs:
           -e SONAR_ORGANIZATION_KEY=johnwatson484 \
           defradigital/ffc-dotnet-core-sonar:1.2.3-dotnet3.1
       displayName: SonarCloud analysis (.NET)
-      condition: and(succeeded(), eq('${{ parameters.framework }}', 'net'), eq('${{ parameters.sonarcloud }}', true))
+      condition: and(succeeded(), eq('${{ parameters.sonarcloud }}', true))
 
     - task: PowerShell@2
       displayName: Check GitHub release
