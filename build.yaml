@@ -191,13 +191,13 @@ jobs:
           {
             "netcoreapp3.1"
             {
-              $tag = 1.2.3-dotnet3.1
+              $tag = "1.2.3-dotnet3.1"
               Write-Host "##vso[task.setvariable variable=sonarImageVersion;]$tag"; 
               Break 
             }
             "net6.0"
             {
-              $tag = 1.3.0-dotnet6.0
+              $tag = "1.3.0-dotnet6.0"
               Write-Host "##vso[task.setvariable variable=sonarImageVersion;]$tag"; 
               Break 
             }
