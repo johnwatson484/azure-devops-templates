@@ -187,7 +187,7 @@ jobs:
       inputs:
         targetType: 'inline'
         script: |
-          switch (targetFramework)
+          switch ($(targetFramework))
           {
             "netcoreapp3.1"
             {
