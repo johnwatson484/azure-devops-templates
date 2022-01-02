@@ -110,6 +110,13 @@ jobs:
       condition: and(succeeded(), eq('${{ parameters.framework }}', 'net'))
 
     - task: PowerShell@2
+      displayName: Create version file
+      inputs:
+        targetType: 'inline'
+        script: |
+          Set-Content $(Build.ArtifactStagingDirectory)\version.txt '$(version)'
+
+    - task: PowerShell@2
       displayName: Set target framework (.NET)
       inputs:
         targetType: 'inline'
@@ -229,3 +236,9 @@ jobs:
         changeLogType: 'commitBased'
       continueOnError: true
       condition: and(succeeded(), eq(variables.releaseExists, false))
+
+    - task: PublishBuildArtifacts@1
+      displayName: Publish artifacts
+      inputs:
+        pathToPublish: '$(Build.ArtifactStagingDirectory)'
+        artifactName: drop
