@@ -169,10 +169,8 @@ jobs:
       displayName: Package Helm
 
     - script: |
-        export HELM_EXPERIMENTAL_OCI=1
-        helm registry login -u $(username) -p $(password) --insecure http://$(helmRepository)
-        helm push $(Agent.BuildDirectory)/s/$(helmRepo)/${{ parameters.repo }}.tgz oci://$(helmRepository)/api/charts
-      displayName: Publish Helm chart
+        curl --data-binary "@$(Agent.BuildDirectory)/s/$(helmRepo)/${{ parameters.repo }}.tgz" http://$(username):$(password)@$(helmRepository)/api/charts
+      displayName: Publish Helm chart to Chart Museum
 
     - task: DownloadSecureFile@1
       name: sshKey
@@ -196,7 +194,7 @@ jobs:
         git add .
         git commit -m "${{ parameters.repo }} updated by Azure DevOps"
         git push origin HEAD:master
-      displayName: Update Helm repo
+      displayName: Update Helm GitHub repository
 
     - task: PowerShell@2
       displayName: Set Sonar image version (.NET)
