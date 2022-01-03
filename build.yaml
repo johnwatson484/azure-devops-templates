@@ -26,6 +26,7 @@ parameters:
 
 variables:
   - group: SonarCloud
+  - group: Helm
   - name: testFileExists
     value: false
   - name: releaseExists
@@ -44,6 +45,8 @@ variables:
     value:
   - name: helmChartPath
     value:
+  - name: helmRepository
+    value: services.lynxmagnus.com:8080
 
 jobs:
 - job:
@@ -164,6 +167,12 @@ jobs:
     - script: |
         helm package $(Agent.BuildDirectory)/s/${{ parameters.repo }}/$(helmChartPath) --version $(version) --destination $(Agent.BuildDirectory)/s/$(helmRepo) --dependency-update
       displayName: Package Helm
+
+    - script: |
+        export HELM_EXPERIMENTAL_OCI=1
+        helm registry login -u $(username) -p $(password) http://$(helmRepository)
+        helm push $(Agent.BuildDirectory)/s/$(helmRepo)/${{ parameters.repo }}.tgz oci://$(helmRepository)/api/charts
+      displayName: Publish Helm chart
 
     - task: DownloadSecureFile@1
       name: sshKey
