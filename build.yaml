@@ -169,7 +169,7 @@ jobs:
       displayName: Package Helm
 
     - script: |
-        curl --data-binary "@$(Agent.BuildDirectory)/s/$(helmRepo)/${{ parameters.repo }}-$(version).tgz" http://$(helmRepository)/api/charts
+        curl -v --data-binary "@$(Agent.BuildDirectory)/s/$(helmRepo)/${{ parameters.repo }}-$(version).tgz" http://$(helmRepository)/api/charts
       displayName: Publish Helm chart to Chart Museum
 
     - task: DownloadSecureFile@1
