@@ -169,7 +169,7 @@ jobs:
       displayName: Package Helm
 
     - script: |
-        result=$(curl -v -s -o /dev/null -w "%{http_code}" --data-binary "@$(Agent.BuildDirectory)/s/$(helmRepo)/${{ parameters.repo }}-$(version).tgz" http://$(helmRepository)/api/charts)
+        result=$(curl -v -s -o /dev/null -w "%{http_code}" --data-binary "@$(Agent.BuildDirectory)/s/$(helmRepo)/${{ parameters.repo }}-$(version).tgz" http://$(username):$(password)@$(helmRepository)/api/charts)
         if [ "$result" == "201" ]
         then
           echo "OK"
