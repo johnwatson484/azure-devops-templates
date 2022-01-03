@@ -170,7 +170,7 @@ jobs:
 
     - script: |
         export HELM_EXPERIMENTAL_OCI=1
-        helm registry login -u $(username) -p $(password) http://$(helmRepository)
+        helm registry login -u $(username) -p $(password) --insecure http://$(helmRepository)
         helm push $(Agent.BuildDirectory)/s/$(helmRepo)/${{ parameters.repo }}.tgz oci://$(helmRepository)/api/charts
       displayName: Publish Helm chart
 
