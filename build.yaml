@@ -117,7 +117,7 @@ jobs:
       inputs:
         targetType: 'inline'
         script: |
-          $htmlVersion = (Get-Content '$(Agent.BuildDirectory)/s/${{ parameters.repo }}/VERSION'
+          $htmlVersion = (Get-Content '$(Agent.BuildDirectory)/s/${{ parameters.repo }}/VERSION')
           Write-Host "##vso[task.setvariable variable=version;]$htmlVersion"
       condition: and(succeeded(), eq('${{ parameters.framework }}', 'html'))
 
