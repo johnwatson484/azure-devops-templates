@@ -113,6 +113,15 @@ jobs:
       condition: and(succeeded(), eq('${{ parameters.framework }}', 'net'))
 
     - task: PowerShell@2
+      displayName: Set version (HTML)
+      inputs:
+        targetType: 'inline'
+        script: |
+          $htmlVersion = (Get-Content '$(Agent.BuildDirectory)/s/${{ parameters.repo }}/VERSION'
+          Write-Host "##vso[task.setvariable variable=version;]$htmlVersion"
+      condition: and(succeeded(), eq('${{ parameters.framework }}', 'html'))
+
+    - task: PowerShell@2
       displayName: Create version file
       inputs:
         targetType: 'inline'
