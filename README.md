@@ -6,7 +6,7 @@ Templates for Azure DevOps build pipelines
 Build and package containerised applications.
 
 ### Pre-requisites
-- must be static HTML, Node.js or one of the following .NET versions
+- must be static HTML, Docker, Node.js or one of the following .NET versions
   - .NET Core 3.1
   - .NET 6.0
 - must use semantic versioning in `package.json` for Node.js `.csproj` for .NET or `VERSION` for HTML.
@@ -36,7 +36,7 @@ Add template repository as a `resource` to an Azure DevOps pipeline definition. 
 
 - `helmChartPath <string> (optional)`: path to Helm chart directory in repository.  If not supplied will assume `./helm/repo`
 
-- `framework <string> (optional)`: `node`, `html` or `net` accepted.  If not supplied will assume `node`
+- `framework <string> (optional)`: `node`, `html`, `docker` or `net` accepted.  If not supplied will assume `node`
 
 #### Example (Node.js)
 
@@ -96,6 +96,26 @@ extends:
   parameters:
     repo: my-repo-name
     framework: html
+```
+
+#### Example (Docker)
+
+```
+trigger:
+  - main
+
+resources:
+  repositories:
+  - repository: templates
+    type: github
+    endpoint: John D Watson
+    name: johnwatson484/azure-devops-templates
+
+extends:
+  template: build.yaml@templates
+  parameters:
+    repo: my-repo-name
+    framework: docker
 ```
 
 ## build-nuget.yaml
