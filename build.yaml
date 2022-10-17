@@ -49,7 +49,7 @@ variables:
     value: services.lynxmagnus.com:8080
 
 jobs:
-- job:
+- job: Build, test and publish
   pool:
     name:  Kubernetes
 
