@@ -51,7 +51,7 @@ variables:
 jobs:
 - job:
   pool:
-    name:  Kubernetes
+    vmImage: 'ubuntu-latest'
 
   steps: 
     - checkout: self
