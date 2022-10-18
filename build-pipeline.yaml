@@ -1,5 +1,3 @@
-resources:
-
 parameters:
 - name: repo
   type: string
