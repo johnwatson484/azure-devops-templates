@@ -68,13 +68,10 @@ jobs:
     - script: |
         git config --global user.email "azuredevops@microsoft.com"
         git config --global user.name "Azure DevOps"
-        git pull origin master
-        git push origin :refs/tags/$majorVersion
         git tag -f $majorVersion $(Build.SourceVersion)
-        git push origin $majorVersion
-        git push origin :refs/tags/$minorVersion
+        git push origin $majorVersion --force
         git tag -f $minorVersion $(Build.SourceVersion)
-        git push origin $minorVersion
+        git push origin $minorVersion --force
       displayName: Tag commit
 
     - task: PublishBuildArtifacts@1
