@@ -1,3 +1,5 @@
+[![Build Status](https://dev.azure.com/johnwatson484/John%20D%20Watson/_apis/build/status/Azure%20DevOps%20Templates?branchName=main)](https://dev.azure.com/johnwatson484/John%20D%20Watson/_build/latest?definitionId=67&branchName=main)
+
 # Azure DevOps Templates
 Templates for Azure DevOps build pipelines
 
