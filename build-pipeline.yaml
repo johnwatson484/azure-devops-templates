@@ -69,9 +69,9 @@ jobs:
         git config --global user.email "azuredevops@microsoft.com"
         git config --global user.name "Azure DevOps"
         git tag $majorVersion
-        git push origin $majorVersion
+        git push origin HEAD:$majorVersion
         git tag $minorVersion
-        git push origin $minorVersion
+        git push origin HEAD:$minorVersion
       displayName: Tag commit
 
     - task: PublishBuildArtifacts@1
