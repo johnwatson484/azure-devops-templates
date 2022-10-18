@@ -19,6 +19,7 @@ jobs:
 
   steps: 
     - checkout: self
+      persistCredentials: true
       displayName: Clone repository
  
     - task: PowerShell@2
@@ -68,10 +69,11 @@ jobs:
     - script: |
         git config --global user.email "azuredevops@microsoft.com"
         git config --global user.name "Azure DevOps"
-        git tag -f $majorVersion
-        git push origin $majorVersion --force
-        git tag -f $minorVersion
-        git push origin $minorVersion --force
+
+        git tag $majorVersion
+        git push origin $majorVersion
+        git tag $minorVersion
+        git push origin $minorVersion
       displayName: Tag commit
 
     - task: PublishBuildArtifacts@1
