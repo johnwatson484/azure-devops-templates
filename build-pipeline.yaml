@@ -22,7 +22,7 @@ jobs:
       inputs:
         targetType: 'inline'
         script: |
-          $fileVersion = (Get-Content '$(Agent.BuildDirectory)/s/${{ parameters.repo }}/VERSION')
+          $fileVersion = (Get-Content '$(Agent.BuildDirectory)/VERSION')
           Write-Host "##vso[task.setvariable variable=version;]$fileVersion"
 
     - task: PowerShell@2
