@@ -69,7 +69,7 @@ jobs:
     - script: |
         git config --global user.email "azuredevops@microsoft.com"
         git config --global user.name "Azure DevOps"
-        git pull origin master
+        git pull origin main
         git tag $majorVersion
         git push origin $majorVersion
         git tag $minorVersion
