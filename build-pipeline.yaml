@@ -68,6 +68,7 @@ jobs:
     - script: |
         git config --global user.email "azuredevops@microsoft.com"
         git config --global user.name "Azure DevOps"
+        git pull origin master
         git push origin :refs/tags/$majorVersion
         git tag -f $majorVersion $(Build.SourceVersion)
         git push origin $majorVersion
