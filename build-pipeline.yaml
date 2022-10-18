@@ -7,6 +7,10 @@ variables:
     value: false
   - name: version
     value:
+  - name: majorVersion
+    value:
+  - name: minorVersion
+    value:
 
 jobs:
 - job: Build
@@ -24,6 +28,11 @@ jobs:
         script: |
           $fileVersion = (Get-Content '$(Build.SourcesDirectory)/VERSION')
           Write-Host "##vso[task.setvariable variable=version;]$fileVersion"
+          $versionArray = $fileVersion.Split('.')
+          $majorVersion = $versionArray[0]
+          Write-Host "##vso[task.setvariable variable=majorVersion;]$majorVersion"
+          $minorVersion = $versionArray[0] + '.' + $versionArray[1]
+          Write-Host "##vso[task.setvariable variable=minorVersion;]$minorVersion"
 
     - task: PowerShell@2
       displayName: Create version file
@@ -55,6 +64,17 @@ jobs:
         changeLogType: 'commitBased'
       continueOnError: true
       condition: and(succeeded(), eq(variables.releaseExists, false))
+
+    - script: |
+        git config --global user.email "azuredevops@microsoft.com"
+        git config --global user.name "Azure DevOps"
+        git push origin :refs/tags/$majorVersion
+        git tag -f $majorVersion $(Build.SourceVersion)
+        git push origin $majorVersion
+        git push origin :refs/tags/$minorVersion
+        git tag -f $minorVersion $(Build.SourceVersion)
+        git push origin $minorVersion
+      displayName: Tag commit
 
     - task: PublishBuildArtifacts@1
       displayName: Publish artifacts
