@@ -70,10 +70,10 @@ jobs:
         git config --global user.email "azuredevops@microsoft.com"
         git config --global user.name "Azure DevOps"
         git push origin :refs/tags/$(majorVersion)
-        git tag $(majorVersion)
+        git tag -f $(majorVersion)
         git push origin $(majorVersion)
         git push origin :refs/tags/$(minorVersion)
-        git tag $(minorVersion)
+        git tag -f $(minorVersion)
         git push origin $(minorVersion)
       displayName: Tag commit
 
