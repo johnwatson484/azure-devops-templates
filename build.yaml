@@ -33,6 +33,8 @@ variables:
     value: false
   - name: version
     value:
+  - name: sanitisiedVersion
+    value:
   - name: targetFramework
     value:
   - name: sonarImageVersion
@@ -91,7 +93,7 @@ jobs:
           Write-Host "##vso[task.setvariable variable=testFileExists;]$fileExists"
 
     - script: |
-        docker-compose -f $(Agent.BuildDirectory)/s/${{ parameters.repo }}/docker-compose.yaml -f $(Agent.BuildDirectory)/s/${{ parameters.repo }}/docker-compose.test.yaml -p ${{ parameters.repo }}-test run --rm ${{ parameters.repo }}
+        docker-compose -f $(Agent.BuildDirectory)/s/${{ parameters.repo }}/docker-compose.yaml -f $(Agent.BuildDirectory)/s/${{ parameters.repo }}/docker-compose.test.yaml -p ${{ parameters.repo }}-test-$(Build.BuildId)-$(sanitisiedVersion) run --rm ${{ parameters.repo }}
       displayName: Run tests
       condition: and(succeeded(), eq(variables.testFileExists, true))
 
@@ -102,6 +104,8 @@ jobs:
         script: |
           $packageVersion = (Get-Content '$(Agent.BuildDirectory)/s/${{ parameters.repo }}/package.json' | ConvertFrom-Json).version
           Write-Host "##vso[task.setvariable variable=version;]$packageVersion"
+          $sanitisiedVersion = $packageVersion -replace '-.', 'p'
+          Write-Host "##vso[task.setvariable variable=sanitisiedVersion;]$sanitisiedVersion"
       condition: and(succeeded(), eq('${{ parameters.framework }}', 'node'))
 
     - task: PowerShell@2
@@ -111,6 +115,8 @@ jobs:
         script: |
           $csprojVersion = ([xml](Get-Content '$(Agent.BuildDirectory)/s/${{ parameters.repo }}/${{ parameters.project }}/${{ parameters.project }}.csproj')).Project.PropertyGroup.Version
           Write-Host "##vso[task.setvariable variable=version;]$csprojVersion"
+          $sanitisiedVersion = $csprojVersion -replace '-.', 'p'
+          Write-Host "##vso[task.setvariable variable=sanitisiedVersion;]$sanitisiedVersion"
       condition: and(succeeded(), eq('${{ parameters.framework }}', 'net'))
 
     - task: PowerShell@2
@@ -118,8 +124,10 @@ jobs:
       inputs:
         targetType: 'inline'
         script: |
-          $htmlVersion = (Get-Content '$(Agent.BuildDirectory)/s/${{ parameters.repo }}/VERSION')
-          Write-Host "##vso[task.setvariable variable=version;]$htmlVersion"
+          $fileVersion = (Get-Content '$(Agent.BuildDirectory)/s/${{ parameters.repo }}/VERSION')
+          Write-Host "##vso[task.setvariable variable=version;]$fileVersion"
+          $sanitisiedVersion = $fileVersion -replace '-.', 'p'
+          Write-Host "##vso[task.setvariable variable=sanitisiedVersion;]$sanitisiedVersion"
       condition: and(succeeded(), ne('${{ parameters.framework }}', 'net'), ne('${{ parameters.framework }}', 'node'))
 
     - task: PowerShell@2
