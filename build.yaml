@@ -142,7 +142,7 @@ jobs:
           Write-Host "##vso[task.setvariable variable=testFileExists;]$fileExists"
 
     - script: |
-        docker-compose -f $(Agent.BuildDirectory)/s/${{ parameters.repo }}/docker-compose.yaml -f $(Agent.BuildDirectory)/s/${{ parameters.repo }}/docker-compose.test.yaml -p ${{ parameters.repo }}-test-$(Build.BuildId)-$(sanitisiedVersion) build
+        docker-compose -f $(Agent.BuildDirectory)/s/${{ parameters.repo }}/docker-compose.yaml -f $(Agent.BuildDirectory)/s/${{ parameters.repo }}/docker-compose.test.yaml -p ${{ parameters.repo }}-test-$(Build.BuildId)-$(sanitisiedVersion) build --no-cache
       displayName: Build test image
       condition: and(succeeded(), eq(variables.testFileExists, true))
 
