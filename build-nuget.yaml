@@ -23,7 +23,7 @@ variables:
 jobs:
 - job:
   pool:
-    vmImage: 'ubuntu-latest'
+    name: Kubernetes
 
   steps:
 
