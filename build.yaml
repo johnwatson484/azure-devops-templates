@@ -90,7 +90,7 @@ jobs:
           Write-Host "##vso[task.setvariable variable=testFileExists;]$fileExists"
     
     - script: |
-        docker-compose -f $(Agent.BuildDirectory)/s/${{ parameters.repo }}/docker-compose.yaml -f $(Agent.BuildDirectory)/s/${{ parameters.repo }}/docker-compose.test.yaml -p ${{ parameters.repo }}-test run ${{ parameters.repo }}
+        docker-compose -f $(Agent.BuildDirectory)/s/${{ parameters.repo }}/docker-compose.yaml -f $(Agent.BuildDirectory)/s/${{ parameters.repo }}/docker-compose.test.yaml -p ${{ parameters.repo }}-test --rm run ${{ parameters.repo }}
       displayName: Run tests
       condition: and(succeeded(), eq(variables.testFileExists, true))
 
@@ -232,6 +232,7 @@ jobs:
           -e SONAR_PROJECT_KEY=johnwatson484_${{ parameters.repo }} \
           -e SONAR_TOKEN=$(token) \
           -e SONAR_ORGANIZATION_KEY=johnwatson484 \
+          --rm \
           defradigital/ffc-dotnet-core-sonar:$(sonarImageVersion)
       displayName: SonarCloud analysis (.NET)
       condition: and(succeeded(), eq('${{ parameters.framework }}', 'net'), eq('${{ parameters.sonarcloud }}', true))
