@@ -16,6 +16,8 @@ jobs:
 - job: Build
   pool:
     name: Kubernetes
+  workspace:
+    clean: all
 
   steps: 
     - checkout: self

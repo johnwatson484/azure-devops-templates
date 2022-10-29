@@ -24,6 +24,8 @@ jobs:
 - job:
   pool:
     name: Kubernetes
+  workspace:
+    clean: all
 
   steps:
 

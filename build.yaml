@@ -51,8 +51,9 @@ variables:
 jobs:
 - job: Build
   pool:
-    vmImage: ubuntu-latest
-
+    name: Kubernetes
+  workspace:
+    clean: all
   steps: 
     - checkout: self
       displayName: Clone repository
