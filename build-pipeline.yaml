@@ -15,7 +15,7 @@ variables:
 jobs:
 - job: Build
   pool:
-    name: Kubernetes
+    vmImage: ubuntu-latest
   workspace:
     clean: all
 
