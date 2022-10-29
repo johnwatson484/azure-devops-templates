@@ -85,26 +85,13 @@ jobs:
           Write-Host "##vso[task.setvariable variable=helmChartPath;]$helmChartPath"
 
     - task: PowerShell@2
-      displayName: Check for tests
-      inputs:
-        targetType: 'inline'
-        script: |
-          $fileExists = Test-Path -Path "$(Agent.BuildDirectory)/s/${{ parameters.repo }}/docker-compose.test.yaml"
-          Write-Host "##vso[task.setvariable variable=testFileExists;]$fileExists"
-
-    - script: |
-        docker-compose -f $(Agent.BuildDirectory)/s/${{ parameters.repo }}/docker-compose.yaml -f $(Agent.BuildDirectory)/s/${{ parameters.repo }}/docker-compose.test.yaml -p ${{ parameters.repo }}-test-$(Build.BuildId)-$(sanitisiedVersion) run --rm ${{ parameters.repo }}
-      displayName: Run tests
-      condition: and(succeeded(), eq(variables.testFileExists, true))
-
-    - task: PowerShell@2
       displayName: Set version (Node.js)
       inputs:
         targetType: 'inline'
         script: |
           $packageVersion = (Get-Content '$(Agent.BuildDirectory)/s/${{ parameters.repo }}/package.json' | ConvertFrom-Json).version
           Write-Host "##vso[task.setvariable variable=version;]$packageVersion"
-          $sanitisiedVersion = $packageVersion -replace '-.', 'p'
+          $sanitisiedVersion = $packageVersion.replace('.', 'p').replace('-', 'p')
           Write-Host "##vso[task.setvariable variable=sanitisiedVersion;]$sanitisiedVersion"
       condition: and(succeeded(), eq('${{ parameters.framework }}', 'node'))
 
@@ -115,7 +102,7 @@ jobs:
         script: |
           $csprojVersion = ([xml](Get-Content '$(Agent.BuildDirectory)/s/${{ parameters.repo }}/${{ parameters.project }}/${{ parameters.project }}.csproj')).Project.PropertyGroup.Version
           Write-Host "##vso[task.setvariable variable=version;]$csprojVersion"
-          $sanitisiedVersion = $csprojVersion -replace '-.', 'p'
+          $sanitisiedVersion = $csprojVersion.replace('.', 'p').replace('-', 'p')
           Write-Host "##vso[task.setvariable variable=sanitisiedVersion;]$sanitisiedVersion"
       condition: and(succeeded(), eq('${{ parameters.framework }}', 'net'))
 
@@ -126,7 +113,7 @@ jobs:
         script: |
           $fileVersion = (Get-Content '$(Agent.BuildDirectory)/s/${{ parameters.repo }}/VERSION')
           Write-Host "##vso[task.setvariable variable=version;]$fileVersion"
-          $sanitisiedVersion = $fileVersion -replace '-.', 'p'
+          $sanitisiedVersion = $fileVersion.replace('.', 'p').replace('-', 'p')
           Write-Host "##vso[task.setvariable variable=sanitisiedVersion;]$sanitisiedVersion"
       condition: and(succeeded(), ne('${{ parameters.framework }}', 'net'), ne('${{ parameters.framework }}', 'node'))
 
@@ -145,6 +132,24 @@ jobs:
           $csprojVersion = ([xml](Get-Content '$(Agent.BuildDirectory)/s/${{ parameters.repo }}/${{ parameters.project }}/${{ parameters.project }}.csproj')).Project.PropertyGroup.TargetFramework
           Write-Host "##vso[task.setvariable variable=targetFramework;]$csprojVersion"
       condition: and(succeeded(), eq('${{ parameters.framework }}', 'net'))
+
+    - task: PowerShell@2
+      displayName: Check for tests
+      inputs:
+        targetType: 'inline'
+        script: |
+          $fileExists = Test-Path -Path "$(Agent.BuildDirectory)/s/${{ parameters.repo }}/docker-compose.test.yaml"
+          Write-Host "##vso[task.setvariable variable=testFileExists;]$fileExists"
+
+    - script: |
+        docker-compose -f $(Agent.BuildDirectory)/s/${{ parameters.repo }}/docker-compose.yaml -f $(Agent.BuildDirectory)/s/${{ parameters.repo }}/docker-compose.test.yaml -p ${{ parameters.repo }}-test-$(Build.BuildId)-$(sanitisiedVersion) build
+      displayName: Build test image
+      condition: and(succeeded(), eq(variables.testFileExists, true))
+
+    - script: |
+        docker-compose -f $(Agent.BuildDirectory)/s/${{ parameters.repo }}/docker-compose.yaml -f $(Agent.BuildDirectory)/s/${{ parameters.repo }}/docker-compose.test.yaml -p ${{ parameters.repo }}-test-$(Build.BuildId)-$(sanitisiedVersion) run --rm ${{ parameters.repo }}
+      displayName: Run tests
+      condition: and(succeeded(), eq(variables.testFileExists, true))
 
     - task: Docker@2
       displayName: Build image
