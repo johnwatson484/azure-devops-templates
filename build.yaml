@@ -23,6 +23,9 @@ parameters:
 - name: project
   type: string
   default:
+- name: helmValuesFile
+  type: string
+  default:
 
 variables:
   - group: SonarCloud
@@ -32,8 +35,6 @@ variables:
   - name: releaseExists
     value: false
   - name: version
-    value:
-  - name: sanitisiedVersion
     value:
   - name: targetFramework
     value:
@@ -91,8 +92,6 @@ jobs:
         script: |
           $packageVersion = (Get-Content '$(Agent.BuildDirectory)/s/${{ parameters.repo }}/package.json' | ConvertFrom-Json).version
           Write-Host "##vso[task.setvariable variable=version;]$packageVersion"
-          $sanitisiedVersion = $packageVersion.replace('.', 'p').replace('-', 'p')
-          Write-Host "##vso[task.setvariable variable=sanitisiedVersion;]$sanitisiedVersion"
       condition: and(succeeded(), eq('${{ parameters.framework }}', 'node'))
 
     - task: PowerShell@2
@@ -102,8 +101,6 @@ jobs:
         script: |
           $csprojVersion = ([xml](Get-Content '$(Agent.BuildDirectory)/s/${{ parameters.repo }}/${{ parameters.project }}/${{ parameters.project }}.csproj')).Project.PropertyGroup.Version
           Write-Host "##vso[task.setvariable variable=version;]$csprojVersion"
-          $sanitisiedVersion = $csprojVersion.replace('.', 'p').replace('-', 'p')
-          Write-Host "##vso[task.setvariable variable=sanitisiedVersion;]$sanitisiedVersion"
       condition: and(succeeded(), eq('${{ parameters.framework }}', 'net'))
 
     - task: PowerShell@2
@@ -113,8 +110,6 @@ jobs:
         script: |
           $fileVersion = (Get-Content '$(Agent.BuildDirectory)/s/${{ parameters.repo }}/VERSION')
           Write-Host "##vso[task.setvariable variable=version;]$fileVersion"
-          $sanitisiedVersion = $fileVersion.replace('.', 'p').replace('-', 'p')
-          Write-Host "##vso[task.setvariable variable=sanitisiedVersion;]$sanitisiedVersion"
       condition: and(succeeded(), ne('${{ parameters.framework }}', 'net'), ne('${{ parameters.framework }}', 'node'))
 
     - task: PowerShell@2
@@ -142,12 +137,12 @@ jobs:
           Write-Host "##vso[task.setvariable variable=testFileExists;]$fileExists"
 
     - script: |
-        docker-compose -f $(Agent.BuildDirectory)/s/${{ parameters.repo }}/docker-compose.yaml -f $(Agent.BuildDirectory)/s/${{ parameters.repo }}/docker-compose.test.yaml -p ${{ parameters.repo }}-test-$(Build.BuildId)-$(sanitisiedVersion) build
+        docker-compose -f $(Agent.BuildDirectory)/s/${{ parameters.repo }}/docker-compose.yaml -f $(Agent.BuildDirectory)/s/${{ parameters.repo }}/docker-compose.test.yaml -p ${{ parameters.repo }}-test-$(Build.BuildId) build
       displayName: Build test image
       condition: and(succeeded(), eq(variables.testFileExists, true))
 
     - script: |
-        docker-compose -f $(Agent.BuildDirectory)/s/${{ parameters.repo }}/docker-compose.yaml -f $(Agent.BuildDirectory)/s/${{ parameters.repo }}/docker-compose.test.yaml -p ${{ parameters.repo }}-test-$(Build.BuildId)-$(sanitisiedVersion) run --rm ${{ parameters.repo }}
+        docker-compose -f $(Agent.BuildDirectory)/s/${{ parameters.repo }}/docker-compose.yaml -f $(Agent.BuildDirectory)/s/${{ parameters.repo }}/docker-compose.test.yaml -p ${{ parameters.repo }}-test-$(Build.BuildId) run --rm ${{ parameters.repo }}
       displayName: Run tests
       condition: and(succeeded(), eq(variables.testFileExists, true))
 
