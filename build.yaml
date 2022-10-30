@@ -280,8 +280,17 @@ jobs:
       displayName: Download Helm values file
       name: helmValuesFile
       inputs:
-        secureFile: '${{ parameters.repo }}-values.yaml'
+        secureFile: ${{ parameters.repo }}-values.yaml
       condition: and(succeeded(), eq(${{ parameters.hasSecureHelmValuesFile }}, true))
+
+    - task: CopyFilesOverSSH@0
+      displayName: Copy values file
+      inputs:
+        sshEndpoint: 'Kubernetes Master'
+        sourceFolder: $(Agent.TempDirectory)
+        contents:  ${{ parameters.repo }}-values.yaml
+        targetFolder: /tmp
+      condition: and(succeeded(), eq(${{ parameters.hasSecureHelmValuesFile }}, true), eq(${{ parameters.deploy }}, true))
 
     - task: SSH@0
       displayName: 'Deploy to Kubernetes'
@@ -290,8 +299,7 @@ jobs:
         runOptions: inline
         inline: |
           helm repo update
-          echo "helm upgrade --install --namespace ${{ parameters.namespace }} -f $(helmValuesFile.secureFilePath)  ${{ parameters.repo }} --atomic lynxmagnus/${{ parameters.repo }} --version $(version) --create-namespace"
-          helm upgrade --install --namespace ${{ parameters.namespace }} -f $(helmValuesFile.secureFilePath)  ${{ parameters.repo }} --atomic lynxmagnus/${{ parameters.repo }} --version $(version) --create-namespace
+          helm upgrade --install --namespace ${{ parameters.namespace }} -f /tmp/${{ parameters.repo }}-values.yaml  ${{ parameters.repo }} --atomic lynxmagnus/${{ parameters.repo }} --version $(version) --create-namespace
       condition: and(succeeded(), eq(${{ parameters.hasSecureHelmValuesFile }}, true), eq(${{ parameters.deploy }}, true))
 
     - task: PublishBuildArtifacts@1
