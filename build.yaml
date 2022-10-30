@@ -290,7 +290,8 @@ jobs:
         runOptions: inline
         inline: |
           helm repo update
-          helm upgrade --install --namespace ${{ parameters.namespace }} ${{ parameters.repo }} --atomic lynxmagnus/${{ parameters.repo }} --version $(version) --create-namespace
+          echo "helm upgrade --install --namespace ${{ parameters.namespace }} -f $(helmValuesFile.secureFilePath)  ${{ parameters.repo }} --atomic lynxmagnus/${{ parameters.repo }} --version $(version) --create-namespace"
+          helm upgrade --install --namespace ${{ parameters.namespace }} -f $(helmValuesFile.secureFilePath)  ${{ parameters.repo }} --atomic lynxmagnus/${{ parameters.repo }} --version $(version) --create-namespace
       condition: and(succeeded(), eq(${{ parameters.hasSecureHelmValuesFile }}, true), eq(${{ parameters.deploy }}, true))
 
     - task: PublishBuildArtifacts@1
