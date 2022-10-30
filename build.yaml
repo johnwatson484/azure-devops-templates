@@ -23,9 +23,15 @@ parameters:
 - name: project
   type: string
   default:
-- name: helmValuesFile
+- name: hasSecureHelmValuesFile
+  type: boolean
+  default: false
+- name: namespace
   type: string
-  default:
+  default: default
+- name: deploy
+  type: boolean
+  default: false
 
 variables:
   - group: SonarCloud
@@ -269,6 +275,23 @@ jobs:
         changeLogType: 'commitBased'
       continueOnError: true
       condition: and(succeeded(), eq(variables.releaseExists, false))
+
+    - task: DownloadSecureFile@1
+      name: helmValuesFile
+      displayName: Download Helm values file
+      inputs:
+        secureFile: '${{ parameters.repo }}-values.yaml'
+      condition: and(succeeded(), eq(variables.hasSecureHelmValuesFile, true))
+
+    - task: SSH@0
+      displayName: 'Deploy to Kubernetes'
+      inputs:
+        sshEndpoint: 'Kubernetes Master'
+        runOptions: inline
+        inline: |
+          helm repo update
+          helm upgrade --install --namespace ${{ parameters.namespace }} -f $(helmValuesFile.secureFilePath)  ${{ parameters.repo }} --atomic lynxmagnus/${{ parameters.repo }} --version $(version) --create-namespace
+      condition: and(succeeded(), eq(variables.hasSecureHelmValuesFile, true), eq(variables.deploy, true))
 
     - task: PublishBuildArtifacts@1
       displayName: Publish artifacts
