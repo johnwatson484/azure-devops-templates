@@ -6,8 +6,6 @@ resources:
     name: johnwatson484/helm-charts
 
 parameters:
-- name: repo
-  type: string
 - name: containerRepository
   type: string
   default:
@@ -36,6 +34,8 @@ parameters:
 variables:
   - group: SonarCloud
   - group: Helm
+  - name:  repo
+    value:
   - name: testFileExists
     value: false
   - name: releaseExists
@@ -59,26 +59,38 @@ variables:
 
 jobs:
 - job: Build
+
   pool:
     vmImage: ubuntu-latest
+
   workspace:
     clean: all
+
   steps: 
     - checkout: self
       displayName: Clone repository
 
     - task: PowerShell@2
-      displayName: Set variables
+      displayName: Set repository name
       inputs:
         targetType: 'inline'
         script: |
+          $repo = "$(Build.Repository.Name)"
+          $repo = $repo.Split("/") | Select-Object -Last 1
+          Write-Host "##vso[task.setvariable variable=repo]$repo"
+
+    - task: PowerShell@2
+      displayName: Set variables
+      inputs:
+        targetType: 'inline'
+        script: |          
           if (!([string]::IsNullOrEmpty('${{ parameters.containerRepository }}')))
           {
               $containerRepository = '${{ parameters.containerRepository }}'
           }
           else
           {
-              $containerRepository = 'johnwatson484/${{ parameters.repo }}'
+              $containerRepository = 'johnwatson484/$(repo)'
           }
           Write-Host "##vso[task.setvariable variable=containerRepository;]$containerRepository"
           if (!([string]::IsNullOrEmpty('${{ parameters.helmChartPath }}')))
@@ -87,7 +99,7 @@ jobs:
           }
           else
           {
-              $helmChartPath = 'helm/${{ parameters.repo }}'
+              $helmChartPath = 'helm/$(repo)'
           }
           Write-Host "##vso[task.setvariable variable=helmChartPath;]$helmChartPath"
 
@@ -96,7 +108,7 @@ jobs:
       inputs:
         targetType: 'inline'
         script: |
-          $packageVersion = (Get-Content '$(Agent.BuildDirectory)/s/${{ parameters.repo }}/package.json' | ConvertFrom-Json).version
+          $packageVersion = (Get-Content '$(Agent.BuildDirectory)/s/$(repo)/package.json' | ConvertFrom-Json).version
           Write-Host "##vso[task.setvariable variable=version;]$packageVersion"
       condition: and(succeeded(), eq('${{ parameters.framework }}', 'node'))
 
@@ -105,7 +117,7 @@ jobs:
       inputs:
         targetType: 'inline'
         script: |
-          $csprojVersion = ([xml](Get-Content '$(Agent.BuildDirectory)/s/${{ parameters.repo }}/${{ parameters.project }}/${{ parameters.project }}.csproj')).Project.PropertyGroup.Version
+          $csprojVersion = ([xml](Get-Content '$(Agent.BuildDirectory)/s/$(repo)/${{ parameters.project }}/${{ parameters.project }}.csproj')).Project.PropertyGroup.Version
           Write-Host "##vso[task.setvariable variable=version;]$csprojVersion"
       condition: and(succeeded(), eq('${{ parameters.framework }}', 'net'))
 
@@ -114,7 +126,7 @@ jobs:
       inputs:
         targetType: 'inline'
         script: |
-          $fileVersion = (Get-Content '$(Agent.BuildDirectory)/s/${{ parameters.repo }}/VERSION')
+          $fileVersion = (Get-Content '$(Agent.BuildDirectory)/s/$(repo)/VERSION')
           Write-Host "##vso[task.setvariable variable=version;]$fileVersion"
       condition: and(succeeded(), ne('${{ parameters.framework }}', 'net'), ne('${{ parameters.framework }}', 'node'))
 
@@ -130,7 +142,7 @@ jobs:
       inputs:
         targetType: 'inline'
         script: |
-          $csprojVersion = ([xml](Get-Content '$(Agent.BuildDirectory)/s/${{ parameters.repo }}/${{ parameters.project }}/${{ parameters.project }}.csproj')).Project.PropertyGroup.TargetFramework
+          $csprojVersion = ([xml](Get-Content '$(Agent.BuildDirectory)/s/$(repo)/${{ parameters.project }}/${{ parameters.project }}.csproj')).Project.PropertyGroup.TargetFramework
           Write-Host "##vso[task.setvariable variable=targetFramework;]$csprojVersion"
       condition: and(succeeded(), eq('${{ parameters.framework }}', 'net'))
 
@@ -139,16 +151,16 @@ jobs:
       inputs:
         targetType: 'inline'
         script: |
-          $fileExists = Test-Path -Path "$(Agent.BuildDirectory)/s/${{ parameters.repo }}/docker-compose.test.yaml"
+          $fileExists = Test-Path -Path "$(Agent.BuildDirectory)/s/$(repo)/docker-compose.test.yaml"
           Write-Host "##vso[task.setvariable variable=testFileExists;]$fileExists"
 
     - script: |
-        docker-compose -f $(Agent.BuildDirectory)/s/${{ parameters.repo }}/docker-compose.yaml -f $(Agent.BuildDirectory)/s/${{ parameters.repo }}/docker-compose.test.yaml -p ${{ parameters.repo }}-test-$(Build.BuildId) build
+        docker-compose -f $(Agent.BuildDirectory)/s/$(repo)/docker-compose.yaml -f $(Agent.BuildDirectory)/s/$(repo)/docker-compose.test.yaml -p $(repo)-test-$(Build.BuildId) build
       displayName: Build test image
       condition: and(succeeded(), eq(variables.testFileExists, true))
 
     - script: |
-        docker-compose -f $(Agent.BuildDirectory)/s/${{ parameters.repo }}/docker-compose.yaml -f $(Agent.BuildDirectory)/s/${{ parameters.repo }}/docker-compose.test.yaml -p ${{ parameters.repo }}-test-$(Build.BuildId) run --rm ${{ parameters.repo }}
+        docker-compose -f $(Agent.BuildDirectory)/s/$(repo)/docker-compose.yaml -f $(Agent.BuildDirectory)/s/$(repo)/docker-compose.test.yaml -p $(repo)-test-$(Build.BuildId) run --rm $(repo)
       displayName: Run tests
       condition: and(succeeded(), eq(variables.testFileExists, true))
 
@@ -158,7 +170,7 @@ jobs:
         containerRegistry: 'DockerHub'
         repository: '$(containerRepository)'
         command: 'build'
-        Dockerfile: '$(Agent.BuildDirectory)/s/${{ parameters.repo }}/Dockerfile'
+        Dockerfile: '$(Agent.BuildDirectory)/s/$(repo)/Dockerfile'
         tags: |
           $(version)
           latest
@@ -177,7 +189,7 @@ jobs:
         addPipelineData: false
 
     - script: |
-        sed -i -e 's/image: .*/image: johnwatson484\/${{ parameters.repo }}:$(version)/' $(Agent.BuildDirectory)/s/${{ parameters.repo }}/$(helmChartPath)/values.yaml
+        sed -i -e 's/image: .*/image: johnwatson484\/$(repo):$(version)/' $(Agent.BuildDirectory)/s/$(repo)/$(helmChartPath)/values.yaml
       displayName: Update Helm values
     
     - task: HelmInstaller@1
@@ -189,11 +201,11 @@ jobs:
       displayName: Clone Helm repository
 
     - script: |
-        helm package $(Agent.BuildDirectory)/s/${{ parameters.repo }}/$(helmChartPath) --version $(version) --destination $(Agent.BuildDirectory)/s/$(helmRepo) --dependency-update
+        helm package $(Agent.BuildDirectory)/s/$(repo)/$(helmChartPath) --version $(version) --destination $(Agent.BuildDirectory)/s/$(helmRepo) --dependency-update
       displayName: Package Helm
 
     - script: |
-        result=$(curl -v -s -o /dev/null -w "%{http_code}" --data-binary "@$(Agent.BuildDirectory)/s/$(helmRepo)/${{ parameters.repo }}-$(version).tgz" http://$(username):$(password)@$(helmRepository)/api/charts)
+        result=$(curl -v -s -o /dev/null -w "%{http_code}" --data-binary "@$(Agent.BuildDirectory)/s/$(helmRepo)/$(repo)-$(version).tgz" http://$(username):$(password)@$(helmRepository)/api/charts)
         if [ "$result" == "201" ]
         then
           echo "OK"
@@ -223,7 +235,7 @@ jobs:
         git pull origin master
         helm repo index . --merge ./index.yaml
         git add .
-        git commit -m "${{ parameters.repo }} updated by Azure DevOps"
+        git commit -m "$(repo) updated by Azure DevOps"
         git push origin HEAD:master
       displayName: Update Helm GitHub repository
 
@@ -241,10 +253,10 @@ jobs:
       condition: and(succeeded(), eq('${{ parameters.framework }}', 'net'))
 
     - script: |
-        cd $(Agent.BuildDirectory)/s/${{ parameters.repo }}
+        cd $(Agent.BuildDirectory)/s/$(repo)
         docker run \
           -v $(pwd)/:/home/dotnet/project \
-          -e SONAR_PROJECT_KEY=johnwatson484_${{ parameters.repo }} \
+          -e SONAR_PROJECT_KEY=johnwatson484_$(repo) \
           -e SONAR_TOKEN=$(token) \
           -e SONAR_ORGANIZATION_KEY=johnwatson484 \
           --rm \
@@ -257,7 +269,7 @@ jobs:
       inputs:
         targetType: 'inline'
         script: |
-          $releaseExists = (Invoke-RestMethod -SkipHttpErrorCheck -Uri 'https://api.github.com/repos/johnwatson484/${{ parameters.repo }}/releases/tags/$(version)').tag_name -eq '$(version)'
+          $releaseExists = (Invoke-RestMethod -SkipHttpErrorCheck -Uri 'https://api.github.com/repos/johnwatson484/$(repo)/releases/tags/$(version)').tag_name -eq '$(version)'
           Write-Host "##vso[task.setvariable variable=releaseExists;]$releaseExists"
 
     - task: GitHubRelease@1
@@ -280,7 +292,7 @@ jobs:
       displayName: Download Helm values file
       name: helmValuesFile
       inputs:
-        secureFile: ${{ parameters.repo }}-values.yaml
+        secureFile: $(repo)-values.yaml
       condition: and(succeeded(), eq(${{ parameters.hasSecureHelmValuesFile }}, true))
 
     - task: CopyFilesOverSSH@0
@@ -288,7 +300,7 @@ jobs:
       inputs:
         sshEndpoint: 'Kubernetes Master'
         sourceFolder: $(Agent.TempDirectory)
-        contents:  ${{ parameters.repo }}-values.yaml
+        contents:  $(repo)-values.yaml
         targetFolder: /tmp
       condition: and(succeeded(), eq(${{ parameters.hasSecureHelmValuesFile }}, true), eq(${{ parameters.deploy }}, true))
 
@@ -299,7 +311,7 @@ jobs:
         runOptions: inline
         inline: |
           helm repo update
-          helm upgrade --install --namespace ${{ parameters.namespace }} -f /tmp/${{ parameters.repo }}-values.yaml  ${{ parameters.repo }} --atomic lynxmagnus/${{ parameters.repo }} --version $(version) --create-namespace
+          helm upgrade --install --namespace ${{ parameters.namespace }} -f /tmp/$(repo)-values.yaml  $(repo) --atomic lynxmagnus/$(repo) --version $(version) --create-namespace
       condition: and(succeeded(), eq(${{ parameters.hasSecureHelmValuesFile }}, true), eq(${{ parameters.deploy }}, true))
 
     - task: PublishBuildArtifacts@1
