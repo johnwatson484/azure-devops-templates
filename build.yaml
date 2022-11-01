@@ -6,6 +6,8 @@ resources:
     name: johnwatson484/helm-charts
 
 parameters:
+- name: name
+  type: string
 - name: containerRepository
   type: string
   default:
@@ -34,8 +36,8 @@ parameters:
 variables:
   - group: SonarCloud
   - group: Helm
-  - name:  repo
-    value:
+  - name: repo
+    value: ${{ parameters.name }}
   - name: testFileExists
     value: false
   - name: releaseExists
@@ -75,22 +77,22 @@ jobs:
       inputs:
         targetType: 'inline'
         script: |
-          $repo = "$(Build.Repository.Name)"
-          $repo = $repo.Split("/") | Select-Object -Last 1
+          $repo = $(Build.Repository.Name)
+          $repo = $repo.Split('/')[-1]
           Write-Host "##vso[task.setvariable variable=repo]$repo"
 
     - task: PowerShell@2
       displayName: Set variables
       inputs:
         targetType: 'inline'
-        script: |          
+        script: |
           if (!([string]::IsNullOrEmpty('${{ parameters.containerRepository }}')))
           {
               $containerRepository = '${{ parameters.containerRepository }}'
           }
           else
           {
-              $containerRepository = 'johnwatson484/$(repo)'
+              $containerRepository = 'johnwatson484/${{ parameters.name }}'
           }
           Write-Host "##vso[task.setvariable variable=containerRepository;]$containerRepository"
           if (!([string]::IsNullOrEmpty('${{ parameters.helmChartPath }}')))
@@ -99,7 +101,7 @@ jobs:
           }
           else
           {
-              $helmChartPath = 'helm/$(repo)'
+              $helmChartPath = 'helm/${{ parameters.name }}'
           }
           Write-Host "##vso[task.setvariable variable=helmChartPath;]$helmChartPath"
 
@@ -189,7 +191,7 @@ jobs:
         addPipelineData: false
 
     - script: |
-        sed -i -e 's/image: .*/image: johnwatson484\/$(repo):$(version)/' $(Agent.BuildDirectory)/s/$(repo)/$(helmChartPath)/values.yaml
+        sed -i -e 's/image: .*/image: johnwatson484\/${{ parameters.name }}:$(version)/' $(Agent.BuildDirectory)/s/$(repo)/$(helmChartPath)/values.yaml
       displayName: Update Helm values
     
     - task: HelmInstaller@1
@@ -235,7 +237,7 @@ jobs:
         git pull origin master
         helm repo index . --merge ./index.yaml
         git add .
-        git commit -m "$(repo) updated by Azure DevOps"
+        git commit -m "${{ parameters.name }} updated by Azure DevOps"
         git push origin HEAD:master
       displayName: Update Helm GitHub repository
 
@@ -300,7 +302,7 @@ jobs:
       inputs:
         sshEndpoint: 'Kubernetes Master'
         sourceFolder: $(Agent.TempDirectory)
-        contents:  $(repo)-values.yaml
+        contents:  ${{ parameters.name }}-values.yaml
         targetFolder: /tmp
       condition: and(succeeded(), eq(${{ parameters.hasSecureHelmValuesFile }}, true), eq(${{ parameters.deploy }}, true))
 
@@ -311,7 +313,7 @@ jobs:
         runOptions: inline
         inline: |
           helm repo update
-          helm upgrade --install --namespace ${{ parameters.namespace }} -f /tmp/$(repo)-values.yaml  $(repo) --atomic lynxmagnus/$(repo) --version $(version) --create-namespace
+          helm upgrade --install --namespace ${{ parameters.namespace }} -f /tmp/$(repo)-values.yaml $(repo) --atomic lynxmagnus/$(repo) --version $(version) --create-namespace
       condition: and(succeeded(), eq(${{ parameters.hasSecureHelmValuesFile }}, true), eq(${{ parameters.deploy }}, true))
 
     - task: PublishBuildArtifacts@1
