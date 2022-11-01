@@ -175,7 +175,6 @@ jobs:
         tags: |
           $(version)
           latest
-        arguments: '--target production'
         addPipelineData: false
 
     - task: Docker@2
