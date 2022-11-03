@@ -310,8 +310,11 @@ jobs:
         sshEndpoint: 'Kubernetes Master'
         runOptions: inline
         inline: |
+          if ['${{ parameters.hasSecureHelmValuesFile }}' -eq 'true']
+          then
+            $fileArg = '-f /tmp/${{ parameters.name }}-values.yaml'
+          fi
           helm repo update
-          $fileArg = if ('${{ parameters.hasSecureHelmValuesFile }}' -eq 'true') { '-f /tmp/${{ parameters.name }}-values.yaml' }
           helm upgrade --install --namespace ${{ parameters.namespace }} $(fileArg) $(repo) --atomic lynxmagnus/$(repo) --version $(version) --create-namespace
       condition: and(succeeded(), eq(${{ parameters.deploy }}, true))
 
