@@ -288,21 +288,21 @@ jobs:
       continueOnError: true
       condition: and(succeeded(), eq(variables.releaseExists, false))
 
-- ${{ if eq(parameters.hasSecureHelmValuesFile, true) }}:
-    - task: DownloadSecureFile@1
-      displayName: Download Helm values file
-      name: helmValuesFile
-      inputs:
-        secureFile: $(repo)-values.yaml
+    - ${{ if eq(parameters.hasSecureHelmValuesFile, true) }}:
+      - task: DownloadSecureFile@1
+        displayName: Download Helm values file
+        name: helmValuesFile
+        inputs:
+          secureFile: $(repo)-values.yaml
 
-    - task: CopyFilesOverSSH@0
-      displayName: Copy values file
-      inputs:
-        sshEndpoint: 'Kubernetes Master'
-        sourceFolder: $(Agent.TempDirectory)
-        contents:  ${{ parameters.name }}-values.yaml
-        targetFolder: /tmp
-      condition: and(succeeded(), eq(${{ parameters.hasSecureHelmValuesFile }}, true), eq(${{ parameters.deploy }}, true))
+      - task: CopyFilesOverSSH@0
+        displayName: Copy values file
+        inputs:
+          sshEndpoint: 'Kubernetes Master'
+          sourceFolder: $(Agent.TempDirectory)
+          contents:  ${{ parameters.name }}-values.yaml
+          targetFolder: /tmp
+        condition: and(succeeded(), eq(${{ parameters.deploy }}, true))
 
     - task: SSH@0
       displayName: 'Deploy to Kubernetes'
