@@ -310,6 +310,7 @@ jobs:
         sshEndpoint: 'Kubernetes Master'
         runOptions: inline
         inline: |
+          $fileArg
           if ['${{ parameters.hasSecureHelmValuesFile }}' -eq 'true']
           then
             $fileArg = '-f /tmp/${{ parameters.name }}-values.yaml'
