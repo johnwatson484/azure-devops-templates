@@ -288,7 +288,7 @@ jobs:
       continueOnError: true
       condition: and(succeeded(), eq(variables.releaseExists, false))
 
-- ${{ if eq(${{ parameters.hasSecureHelmValuesFile }}, true) }}:
+- ${{ if eq(parameters.hasSecureHelmValuesFile, true) }}:
     - task: DownloadSecureFile@1
       displayName: Download Helm values file
       name: helmValuesFile
