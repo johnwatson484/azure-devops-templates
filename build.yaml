@@ -288,12 +288,12 @@ jobs:
       continueOnError: true
       condition: and(succeeded(), eq(variables.releaseExists, false))
 
+- ${{ if eq(${{ parameters.hasSecureHelmValuesFile }}, true) }}:
     - task: DownloadSecureFile@1
       displayName: Download Helm values file
       name: helmValuesFile
       inputs:
         secureFile: $(repo)-values.yaml
-      condition: and(succeeded(), eq(${{ parameters.hasSecureHelmValuesFile }}, true))
 
     - task: CopyFilesOverSSH@0
       displayName: Copy values file
