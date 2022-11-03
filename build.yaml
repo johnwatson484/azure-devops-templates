@@ -311,7 +311,8 @@ jobs:
         runOptions: inline
         inline: |
           helm repo update
-          helm upgrade --install --namespace ${{ parameters.namespace }} -f /tmp/$(repo)-values.yaml $(repo) --atomic lynxmagnus/$(repo) --version $(version) --create-namespace
+          $fileArg = if ('${{ parameters.hasSecureHelmValuesFile }}' -eq 'true') { '-f /tmp/${{ parameters.name }}-values.yaml' }
+          helm upgrade --install --namespace ${{ parameters.namespace }} $(fileArg) $(repo) --atomic lynxmagnus/$(repo) --version $(version) --create-namespace
       condition: and(succeeded(), eq(${{ parameters.deploy }}, true))
 
     - task: PublishBuildArtifacts@1
