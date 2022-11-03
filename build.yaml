@@ -311,7 +311,7 @@ jobs:
         runOptions: inline
         inline: |
           fileArg=""
-          if ["${${{ parameters.hasSecureHelmValuesFile }}}" = "true"]; then
+          if [ "${${{ parameters.hasSecureHelmValuesFile }}}" = "true" ]; then
             fileArg="-f /tmp/${{ parameters.name }}-values.yaml"
           fi
           helm repo update
