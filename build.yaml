@@ -132,13 +132,6 @@ jobs:
       condition: and(succeeded(), ne('${{ parameters.framework }}', 'net'), ne('${{ parameters.framework }}', 'node'))
 
     - task: PowerShell@2
-      displayName: Create version file
-      inputs:
-        targetType: 'inline'
-        script: |
-          Set-Content $(Build.ArtifactStagingDirectory)\version.txt '$(version)'
-
-    - task: PowerShell@2
       displayName: Set target framework (.NET)
       inputs:
         targetType: 'inline'
@@ -317,9 +310,3 @@ jobs:
           helm repo update
           helm upgrade --install --namespace ${{ parameters.namespace }} $fileArg $(repo) --atomic lynxmagnus/$(repo) --version $(version) --create-namespace
       condition: and(succeeded(), eq(${{ parameters.deploy }}, true))
-
-    - task: PublishBuildArtifacts@1
-      displayName: Publish artifacts
-      inputs:
-        pathToPublish: '$(Build.ArtifactStagingDirectory)'
-        artifactName: drop
