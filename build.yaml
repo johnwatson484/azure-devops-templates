@@ -61,10 +61,7 @@ jobs:
   workspace:
     clean: all
 
-  steps: 
-    - checkout: self
-      displayName: Clone repository
-
+  steps:
     - task: PowerShell@2
       displayName: Set repository name
       inputs:
@@ -102,7 +99,7 @@ jobs:
       inputs:
         targetType: 'inline'
         script: |
-          $packageVersion = (Get-Content '$(Agent.BuildDirectory)/s/$(repo)/package.json' | ConvertFrom-Json).version
+          $packageVersion = (Get-Content 'package.json' | ConvertFrom-Json).version
           Write-Host "##vso[task.setvariable variable=version;]$packageVersion"
       condition: and(succeeded(), eq('${{ parameters.framework }}', 'node'))
 
@@ -111,7 +108,7 @@ jobs:
       inputs:
         targetType: 'inline'
         script: |
-          $csprojVersion = ([xml](Get-Content '$(Agent.BuildDirectory)/s/$(repo)/${{ parameters.project }}/${{ parameters.project }}.csproj')).Project.PropertyGroup.Version
+          $csprojVersion = ([xml](Get-Content '${{ parameters.project }}/${{ parameters.project }}.csproj')).Project.PropertyGroup.Version
           Write-Host "##vso[task.setvariable variable=version;]$csprojVersion"
       condition: and(succeeded(), eq('${{ parameters.framework }}', 'net'))
 
@@ -120,7 +117,7 @@ jobs:
       inputs:
         targetType: 'inline'
         script: |
-          $fileVersion = (Get-Content '$(Agent.BuildDirectory)/s/$(repo)/VERSION')
+          $fileVersion = (Get-Content 'VERSION')
           Write-Host "##vso[task.setvariable variable=version;]$fileVersion"
       condition: and(succeeded(), ne('${{ parameters.framework }}', 'net'), ne('${{ parameters.framework }}', 'node'))
 
@@ -129,7 +126,7 @@ jobs:
       inputs:
         targetType: 'inline'
         script: |
-          $csprojVersion = ([xml](Get-Content '$(Agent.BuildDirectory)/s/$(repo)/${{ parameters.project }}/${{ parameters.project }}.csproj')).Project.PropertyGroup.TargetFramework
+          $csprojVersion = ([xml](Get-Content '${{ parameters.project }}/${{ parameters.project }}.csproj')).Project.PropertyGroup.TargetFramework
           Write-Host "##vso[task.setvariable variable=targetFramework;]$csprojVersion"
       condition: and(succeeded(), eq('${{ parameters.framework }}', 'net'))
 
@@ -138,16 +135,16 @@ jobs:
       inputs:
         targetType: 'inline'
         script: |
-          $fileExists = Test-Path -Path "$(Agent.BuildDirectory)/s/$(repo)/docker-compose.test.yaml"
+          $fileExists = Test-Path -Path "docker-compose.test.yaml"
           Write-Host "##vso[task.setvariable variable=testFileExists;]$fileExists"
 
     - script: |
-        docker-compose -f $(Agent.BuildDirectory)/s/$(repo)/docker-compose.yaml -f $(Agent.BuildDirectory)/s/$(repo)/docker-compose.test.yaml -p $(repo)-test-$(Build.BuildId) build
+        docker-compose -f docker-compose.yaml -f docker-compose.test.yaml -p $(repo)-test-$(Build.BuildId) build
       displayName: Build test image
       condition: and(succeeded(), eq(variables.testFileExists, true))
 
     - script: |
-        docker-compose -f $(Agent.BuildDirectory)/s/$(repo)/docker-compose.yaml -f $(Agent.BuildDirectory)/s/$(repo)/docker-compose.test.yaml -p $(repo)-test-$(Build.BuildId) run --rm $(repo)
+        docker-compose -f docker-compose.yaml -f docker-compose.test.yaml -p $(repo)-test-$(Build.BuildId) run --rm $(repo)
       displayName: Run tests
       condition: and(succeeded(), eq(variables.testFileExists, true))
 
@@ -157,7 +154,7 @@ jobs:
         containerRegistry: 'DockerHub'
         repository: '$(containerRepository)'
         command: 'build'
-        Dockerfile: '$(Agent.BuildDirectory)/s/$(repo)/Dockerfile'
+        Dockerfile: 'Dockerfile'
         tags: |
           $(version)
           latest
@@ -175,7 +172,7 @@ jobs:
         addPipelineData: false
 
     - script: |
-        sed -i -e 's/image: .*/image: johnwatson484\/${{ parameters.name }}:$(version)/' $(Agent.BuildDirectory)/s/$(repo)/$(helmChartPath)/values.yaml
+        sed -i -e 's/image: .*/image: johnwatson484\/${{ parameters.name }}:$(version)/' $(helmChartPath)/values.yaml
       displayName: Update Helm values
     
     - task: HelmInstaller@1
@@ -184,7 +181,7 @@ jobs:
         helmVersionToInstall: 'latest'
 
     - script: |
-        helm package $(Agent.BuildDirectory)/s/$(repo)/$(helmChartPath) --version $(version) --destination $(Agent.BuildDirectory)/s/$(helmRepo) --dependency-update
+        helm package $(helmChartPath) --version $(version) --destination $(Agent.BuildDirectory)/s/$(helmRepo) --dependency-update
       displayName: Package Helm
 
     - script: |
