@@ -78,9 +78,3 @@ jobs:
         git tag -f $(minorVersion)
         git push origin $(minorVersion)
       displayName: Tag commit
-
-    - task: PublishBuildArtifacts@1
-      displayName: Publish artifacts
-      inputs:
-        pathToPublish: '$(Build.ArtifactStagingDirectory)'
-        artifactName: drop

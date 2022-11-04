@@ -1,10 +1,3 @@
-resources:
-  repositories:
-  - repository: helmRepo
-    type: github
-    endpoint: John D Watson
-    name: johnwatson484/helm-charts
-
 parameters:
 - name: name
   type: string
@@ -190,9 +183,6 @@ jobs:
       inputs:
         helmVersionToInstall: 'latest'
 
-    - checkout: helmRepo
-      displayName: Clone Helm repository
-
     - script: |
         helm package $(Agent.BuildDirectory)/s/$(repo)/$(helmChartPath) --version $(version) --destination $(Agent.BuildDirectory)/s/$(helmRepo) --dependency-update
       displayName: Package Helm
@@ -207,30 +197,6 @@ jobs:
           exit 1
         fi
       displayName: Publish Helm chart to Chart Museum
-
-    - task: DownloadSecureFile@1
-      name: sshKey
-      displayName: Download SSH key
-      inputs:
-        secureFile: 'GitHub-Helm-Deploy-Key'
-
-    - script: |
-        mkdir ~/.ssh && mv $(sshKey.secureFilePath) ~/.ssh/id_rsa
-        chmod 700 ~/.ssh && chmod 600 ~/.ssh/id_rsa
-        ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
-      displayName: Install SSH key
-    
-    - script: |
-        cd $(Agent.BuildDirectory)/s/$(helmRepo)
-        git config --global user.email "azuredevops@microsoft.com"
-        git config --global user.name "Azure DevOps"
-        git remote set-url --push origin $(helmRepositoryUrl)
-        git pull origin master
-        helm repo index . --merge ./index.yaml
-        git add .
-        git commit -m "${{ parameters.name }} updated by Azure DevOps"
-        git push origin HEAD:master
-      displayName: Update Helm GitHub repository
 
     - task: PowerShell@2
       displayName: Set Sonar image version (.NET)
