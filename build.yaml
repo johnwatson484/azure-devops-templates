@@ -45,8 +45,6 @@ variables:
     value:
   - name: helmRepo
     value: helm-charts
-  - name: helmRepositoryUrl
-    value: git@github.com:johnwatson484/helm-charts.git
   - name: containerRepository
     value:
   - name: helmChartPath
