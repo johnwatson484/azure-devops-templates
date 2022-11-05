@@ -132,6 +132,16 @@ jobs:
           Write-Host "##vso[task.setvariable variable=targetFramework;]$csprojVersion"
       condition: and(succeeded(), eq('${{ parameters.framework }}', 'net'))
 
+    - task: HelmInstaller@1
+      displayName: Install Helm
+      inputs:
+        helmVersionToInstall: 'latest'
+
+    - script: |
+        helm dependency update $(helmChartPath)
+        helm lint $(helmChartPath)
+      displayName: Helm lint
+
     - task: PowerShell@2
       displayName: Check for tests
       inputs:
@@ -189,18 +199,13 @@ jobs:
     - script: |
         sed -i -e 's/image: .*/image: johnwatson484\/${{ parameters.name }}:$(version)/' $(helmChartPath)/values.yaml
       displayName: Update Helm values
-    
-    - task: HelmInstaller@1
-      displayName: Install Helm
-      inputs:
-        helmVersionToInstall: 'latest'
 
     - script: |
-        helm package $(helmChartPath) --version $(version) --destination $(Agent.BuildDirectory)/s/$(helmRepo) --dependency-update
+        helm package $(helmChartPath) --version $(version) --destination $(helmRepo) --dependency-update
       displayName: Package Helm
 
     - script: |
-        result=$(curl -v -s -o /dev/null -w "%{http_code}" --data-binary "@$(Agent.BuildDirectory)/s/$(helmRepo)/$(repo)-$(version).tgz" http://$(username):$(password)@$(helmRepository)/api/charts)
+        result=$(curl -v -s -o /dev/null -w "%{http_code}" --data-binary "@$(helmRepo)/$(repo)-$(version).tgz" http://$(username):$(password)@$(helmRepository)/api/charts)
         if [ "$result" == "201" ]
         then
           echo "OK"
