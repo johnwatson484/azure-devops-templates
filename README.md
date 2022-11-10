@@ -30,7 +30,7 @@ Build and package containerised applications.
 Add template repository as a `resource` to an Azure DevOps pipeline definition.  Then add an `extends` section referencing the `build.yaml` template.
 
 #### Parameters
-- `repo <string>`: name of repository
+- `name <string>`: name to package image and Helm chart with
 
 - `project <string>`: .NET only, name of the .NET project to build
 
@@ -39,6 +39,10 @@ Add template repository as a `resource` to an Azure DevOps pipeline definition. 
 - `helmChartPath <string> (optional)`: path to Helm chart directory in repository.  If not supplied will assume `./helm/repo`
 
 - `framework <string> (optional)`: `node`, `html`, `helm` or `net` accepted.  If not supplied will assume `node`
+
+- `deploy`: `true` or `false` accepted.  If not supplied will assume `false`.  If `true` will deploy to Kubernetes cluster
+
+- `hasSecureHelmValuesFile`: `true` or `false` accepted.  If not supplied will assume `false`.  If `true` will use `helmValuesFile` persisted as Azure secure file to override default Helm values
 
 #### Example (Node.js)
 
@@ -56,7 +60,8 @@ resources:
 extends:
   template: build.yaml@templates
   parameters:
-    repo: my-repo-name
+    name: my-repo-name
+    deploy: true
 ```
 
 #### Example (.NET)
@@ -75,9 +80,10 @@ resources:
 extends:
   template: build.yaml@templates
   parameters:
-    repo: my-repo-name
+    name: my-repo-name
     project: MyProjectName
     framework: net
+    deploy: true
 ```
 
 #### Example (HTML)
@@ -96,7 +102,7 @@ resources:
 extends:
   template: build.yaml@templates
   parameters:
-    repo: my-repo-name
+    name: my-repo-name
     framework: html
 ```
 
@@ -116,7 +122,7 @@ resources:
 extends:
   template: build.yaml@templates
   parameters:
-    repo: my-repo-name
+    name: my-repo-name
     framework: helm
 ```
 
