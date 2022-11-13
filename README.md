@@ -42,6 +42,8 @@ Add template repository as a `resource` to an Azure DevOps pipeline definition. 
 
 - `deploy`: `true` or `false` accepted.  If not supplied will assume `false`.  If `true` will deploy to Kubernetes cluster
 
+- `namespace <string> (optional)`: Kubernetes namespace to deploy to.
+
 - `hasSecureHelmValuesFile`: `true` or `false` accepted.  If not supplied will assume `false`.  If `true` will use `helmValuesFile` persisted as Azure secure file to override default Helm values
 
 #### Example (Node.js)
@@ -62,6 +64,7 @@ extends:
   parameters:
     name: my-repo-name
     deploy: true
+    namespace: my-namespace
 ```
 
 #### Example (.NET)
@@ -84,6 +87,7 @@ extends:
     project: MyProjectName
     framework: net
     deploy: true
+    namespace: my-namespace
 ```
 
 #### Example (HTML)
@@ -104,6 +108,8 @@ extends:
   parameters:
     name: my-repo-name
     framework: html
+    deploy: true
+    namespace: my-namespace
 ```
 
 #### Example (Helm)
@@ -124,6 +130,8 @@ extends:
   parameters:
     name: my-repo-name
     framework: helm
+    deploy: true
+    namespace: my-namespace
 ```
 
 ## build-nuget.yaml
