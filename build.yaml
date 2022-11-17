@@ -287,9 +287,10 @@ jobs:
           fileArg=""
           if [ "${${{ parameters.hasSecureHelmValuesFile }}}" = "true" ]; then
             fileArg="-f /tmp/${{ parameters.name }}-values.yaml"
-            echo $fileArg
+            echo "Using secure values file"
           fi
           helm repo update
+          echo "helm upgrade --install --namespace ${{ parameters.namespace }} $fileArg $(repo) --atomic lynxmagnus/$(repo) --version $(version) --create-namespace"
           helm upgrade --install --namespace ${{ parameters.namespace }} $fileArg $(repo) --atomic lynxmagnus/$(repo) --version $(version) --create-namespace
           rm -rf /tmp/${{ parameters.name }}-values.yaml
       condition: and(succeeded(), eq(${{ parameters.deploy }}, true))
