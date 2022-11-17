@@ -289,5 +289,7 @@ jobs:
             fileArg="-f /tmp/${{ parameters.name }}-values.yaml"
           fi
           helm repo update
+          echo "helm upgrade --install --namespace ${{ parameters.namespace }} $fileArg $(repo) --atomic lynxmagnus/$(repo) --version $(version) --create-namespace"
           helm upgrade --install --namespace ${{ parameters.namespace }} $fileArg $(repo) --atomic lynxmagnus/$(repo) --version $(version) --create-namespace
+          rm -rf /tmp/${{ parameters.name }}-values.yaml
       condition: and(succeeded(), eq(${{ parameters.deploy }}, true))
