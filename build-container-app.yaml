@@ -67,16 +67,7 @@ jobs:
           {
               $containerRepository = 'johnwatson484/${{ parameters.name }}'
           }
-          Write-Host "##vso[task.setvariable variable=containerRepository;]$containerRepository"
-          if (!([string]::IsNullOrEmpty('${{ parameters.helmChartPath }}')))
-          {
-              $helmChartPath = '${{ parameters.helmChartPath }}'
-          }
-          else
-          {
-              $helmChartPath = 'helm/${{ parameters.name }}'
-          }
-          Write-Host "##vso[task.setvariable variable=helmChartPath;]$helmChartPath"
+          Write-Host "##vso[task.setvariable variable=containerRepository;]$containerRepository"          
 
     - task: PowerShell@2
       displayName: Set version (Node.js)
