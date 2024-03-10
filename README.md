@@ -48,7 +48,7 @@ Add template repository as a `resource` to an Azure DevOps pipeline definition. 
 
 #### Example (Node.js)
 
-```
+```yaml
 trigger:
   - main
 
@@ -69,7 +69,7 @@ extends:
 
 #### Example (.NET)
 
-```
+```yaml
 trigger:
   - main
 
@@ -92,7 +92,7 @@ extends:
 
 #### Example (HTML)
 
-```
+```yaml
 trigger:
   - main
 
@@ -114,7 +114,7 @@ extends:
 
 #### Example (Helm)
 
-```
+```yaml
 trigger:
   - main
 
@@ -159,7 +159,7 @@ Add template repository as a `resource` to an Azure DevOps pipeline definition. 
 
 #### Example (Node.js)
 
-```
+```yaml
 trigger:
   - main
 
@@ -175,4 +175,104 @@ extends:
   parameters:
     repo: my-repo-name
     project: MyProjectName
+```
+
+## build-container-app.yaml
+
+Build and package containerised applications for Azure Container Apps.
+
+### Pre-requisites
+- must be static HTML, Helm, Node.js or one of the following .NET versions
+  - .NET Core 3.1
+  - .NET 6.0
+- must use semantic versioning in `package.json` for Node.js `.csproj` for .NET or `VERSION` for HTML.
+- must have Dockerfile
+- if tests are to be run, `docker-compose.test.yaml` must exist to run tests with exit on complete
+- Azure DevOps must be setup with connections to GitHub
+
+### Steps
+- set build variables
+- run containerised tests if `docker-compose.test.yaml` exists.
+- determine version for build assets
+- build container image
+- publish container image to DockerHub tagged with version
+- publish Helm chart to Helm chart repository tagged with version
+- create GitHub release tagged with version if doesn't already exist
+
+### Usage
+
+Add template repository as a `resource` to an Azure DevOps pipeline definition.  Then add an `extends` section referencing the `build.yaml` template.
+
+#### Parameters
+- `name <string>`: name to package image with
+
+- `project <string>`: .NET only, name of the .NET project to build
+
+- `containerRepository <string> (optional)`: name of container registry in DockerHub to publish image to.  If not supplied will assume `johnwatson484/repo`
+
+- `framework <string> (optional)`: `node`, `html`, `helm` or `net` accepted.  If not supplied will assume `node`
+
+- `deploy`: `true` or `false` accepted.  If not supplied will assume `false`.  If `true` will deploy to Azure Container Apps
+
+#### Example (Node.js)
+
+```yaml
+trigger:
+  - main
+
+resources:
+  repositories:
+  - repository: templates
+    type: github
+    endpoint: John D Watson
+    name: johnwatson484/azure-devops-templates
+
+extends:
+  template: build-container-app.yaml@templates
+  parameters:
+    name: my-repo-name
+    deploy: true
+```
+
+#### Example (.NET)
+
+```yaml
+trigger:
+  - main
+
+resources:
+  repositories:
+  - repository: templates
+    type: github
+    endpoint: John D Watson
+    name: johnwatson484/azure-devops-templates
+
+extends:
+  template: build-container-app.yaml@templates
+  parameters:
+    name: my-repo-name
+    project: MyProjectName
+    framework: net
+    deploy: true
+```
+
+#### Example (HTML)
+
+```yaml
+trigger:
+  - main
+
+resources:
+  repositories:
+  - repository: templates
+    type: github
+    endpoint: John D Watson
+    name: johnwatson484/azure-devops-templates
+
+extends:
+  template: build.yaml@templates
+  parameters:
+    name: my-repo-name
+    framework: html
+    deploy: true
 ```
