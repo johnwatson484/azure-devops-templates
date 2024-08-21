@@ -11,6 +11,7 @@ Build and package containerised applications.
 - must be static HTML, Helm, Node.js or one of the following .NET versions
   - .NET Core 3.1
   - .NET 6.0
+  - .NET 8.0
 - must use semantic versioning in `package.json` for Node.js `.csproj` for .NET or `VERSION` for HTML.
 - must have Dockerfile
 - if tests are to be run, `docker-compose.test.yaml` must exist to run tests with exit on complete
@@ -185,6 +186,7 @@ Build and package containerised applications for Azure Container Apps.
 - must be static HTML, Helm, Node.js or one of the following .NET versions
   - .NET Core 3.1
   - .NET 6.0
+  - .NET 8.0
 - must use semantic versioning in `package.json` for Node.js `.csproj` for .NET or `VERSION` for HTML.
 - must have Dockerfile
 - if tests are to be run, `docker-compose.test.yaml` must exist to run tests with exit on complete
