@@ -16,9 +16,6 @@ parameters:
 - name: project
   type: string
   default:
-- name: hasSecureHelmValuesFile
-  type: boolean
-  default: false
 - name: namespace
   type: string
   default: default
@@ -51,8 +48,6 @@ variables:
     value:
   - name: helmRepository
     value: services.lynxmagnus.com:8080
-  - name: helmFileArg
-    value:
 
 jobs:
 - job: Build
@@ -265,31 +260,6 @@ jobs:
       continueOnError: true
       condition: and(succeeded(), eq(variables.releaseExists, false))
 
-    - ${{ if eq(parameters.hasSecureHelmValuesFile, true) }}:
-      - task: DownloadSecureFile@1
-        displayName: Download Helm values file
-        name: helmValuesFile
-        inputs:
-          secureFile: $(repo)-values.yaml
-
-      - task: CopyFilesOverSSH@0
-        displayName: Copy values file
-        inputs:
-          sshEndpoint: 'Kubernetes Master'
-          sourceFolder: $(Agent.TempDirectory)
-          contents:  ${{ parameters.name }}-values.yaml
-          targetFolder: /tmp
-        condition: and(succeeded(), eq(${{ parameters.deploy }}, true))
-
-    - task: Bash@3
-      displayName: Set Helm file argument
-      inputs:
-        targetType: 'inline'
-        script: |
-          helmFileArg="-f /tmp/${{ parameters.name }}-values.yaml"
-          echo "##vso[task.setvariable variable=helmFileArg;]$helmFileArg"
-      condition: and(succeeded(), eq(${{ parameters.deploy }}, true), eq(${{ parameters.hasSecureHelmValuesFile }}, true))
-
     - task: SSH@0
       displayName: 'Deploy to Kubernetes'
       inputs:
@@ -297,6 +267,6 @@ jobs:
         runOptions: inline
         inline: |          
           helm repo update
-          helm upgrade --install --namespace ${{ parameters.namespace }} $(helmFileArg) $(repo) --atomic lynxmagnus/$(repo) --version $(version) --create-namespace
+          helm upgrade --install --namespace ${{ parameters.namespace }} $(repo) --atomic lynxmagnus/$(repo) --version $(version) --create-namespace
           rm -rf /tmp/${{ parameters.name }}-values.yaml
       condition: and(succeeded(), eq(${{ parameters.deploy }}, true))
