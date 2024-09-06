@@ -265,8 +265,7 @@ jobs:
       inputs:
         sshEndpoint: 'Kubernetes Master'
         runOptions: inline
-        inline: |          
+        inline: |
           helm repo update
           helm upgrade --install --namespace ${{ parameters.namespace }} $(repo) --atomic lynxmagnus/$(repo) --version $(version) --create-namespace
-          rm -rf /tmp/${{ parameters.name }}-values.yaml
       condition: and(succeeded(), eq(${{ parameters.deploy }}, true))
