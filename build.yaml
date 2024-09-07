@@ -156,7 +156,7 @@ jobs:
       condition: and(succeeded(), eq(variables.testFileExists, true))
 
     - task: PowerShell@2
-      displayName: Check for OWASP ZAP tests
+      displayName: Check for ZAP tests
       inputs:
         targetType: 'inline'
         script: |
@@ -165,7 +165,7 @@ jobs:
 
     - script: |
         docker compose -f docker-compose.yaml -f docker-compose.zap.yaml -p $(repo)-zap-$(Build.BuildId) run --rm $(repo)-zap
-      displayName: Run OWASP ZAP tests
+      displayName: Run ZAP tests
       condition: and(succeeded(), eq(variables.zapFileExists, true))
 
     - task: Docker@2
@@ -260,7 +260,14 @@ jobs:
       continueOnError: true
       condition: and(succeeded(), eq(variables.releaseExists, false))
 
+    - script: |
+        helm repo add lynxmagnus $(helmRepository)
+        helm repo update
+      displayName: 'Add Helm repository'
+      condition: and(succeeded(), eq(${{ parameters.deploy }}, true))
+
     - task: HelmDeploy@1
+      displayName: Deploy to Kubernetes
       inputs:
         connectionType: 'Kubernetes Service Connection'
         kubernetesServiceConnection: 'Contabo'
