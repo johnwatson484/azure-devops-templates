@@ -261,7 +261,7 @@ jobs:
       condition: and(succeeded(), eq(variables.releaseExists, false))
 
     - script: |
-        helm repo add lynxmagnus $(helmRepository)
+        helm repo add lynxmagnus http://$(helmRepository)
         helm repo update
       displayName: 'Add Helm repository'
       condition: and(succeeded(), eq(${{ parameters.deploy }}, true))
