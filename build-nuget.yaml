@@ -42,7 +42,7 @@ jobs:
       inputs:
         targetType: 'inline'
         script: |
-          $csprojVersion = ([xml](Get-Content '$(Agent.BuildDirectory)/s/${{ parameters.repo }}/${{ parameters.project }}/${{ parameters.project }}.csproj')).Project.PropertyGroup.TargetFramework
+          $csprojVersion = ([xml](Get-Content '${{ parameters.project }}/${{ parameters.project }}.csproj')).Project.PropertyGroup.TargetFramework
           Write-Host "##vso[task.setvariable variable=targetFramework;]$csprojVersion"
 
     - task: DotNetCoreCLI@2
