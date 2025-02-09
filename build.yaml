@@ -142,16 +142,16 @@ jobs:
       inputs:
         targetType: 'inline'
         script: |
-          $fileExists = Test-Path -Path "docker-compose.test.yaml"
+          $fileExists = Test-Path -Path "compose.test.yaml"
           Write-Host "##vso[task.setvariable variable=testFileExists;]$fileExists"
 
     - script: |
-        docker compose -f docker-compose.yaml -f docker-compose.test.yaml -p $(repo)-test-$(Build.BuildId) build
+        docker compose -f compose.test.yaml -p $(repo)-test-$(Build.BuildId) build
       displayName: Build test image
       condition: and(succeeded(), eq(variables.testFileExists, true))
 
     - script: |
-        docker compose -f docker-compose.yaml -f docker-compose.test.yaml -p $(repo)-test-$(Build.BuildId) run --rm $(repo)
+        docker compose -f compose.test.yaml -p $(repo)-test-$(Build.BuildId) run --rm $(repo)
       displayName: Run tests
       condition: and(succeeded(), eq(variables.testFileExists, true))
 
@@ -160,11 +160,11 @@ jobs:
       inputs:
         targetType: 'inline'
         script: |
-          $fileExists = Test-Path -Path "docker-compose.zap.yaml"
+          $fileExists = Test-Path -Path "compose.zap.yaml"
           Write-Host "##vso[task.setvariable variable=zapFileExists;]$fileExists"
 
     - script: |
-        docker compose -f docker-compose.yaml -f docker-compose.zap.yaml -p $(repo)-zap-$(Build.BuildId) run --rm $(repo)-zap
+        docker compose -f compose.zap.yaml -p $(repo)-zap-$(Build.BuildId) run --rm $(repo)-zap
       displayName: Run ZAP tests
       condition: and(succeeded(), eq(variables.zapFileExists, true))
 

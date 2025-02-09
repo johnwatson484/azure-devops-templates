@@ -14,12 +14,12 @@ Build and package containerised applications.
   - .NET 8.0
 - must use semantic versioning in `package.json` for Node.js `.csproj` for .NET or `VERSION` for HTML.
 - must have Dockerfile
-- if tests are to be run, `docker-compose.test.yaml` must exist to run tests with exit on complete
+- if tests are to be run, `compose.test.yaml` must exist to run tests with exit on complete
 - Azure DevOps must be setup with connections to GitHub
 
 ### Steps
 - set build variables
-- run containerised tests if `docker-compose.test.yaml` exists.
+- run containerised tests if `compose.test.yaml` exists.
 - determine version for build assets
 - build container image
 - publish container image to DockerHub tagged with version
@@ -189,12 +189,12 @@ Build and package containerised applications for Azure Container Apps.
   - .NET 8.0
 - must use semantic versioning in `package.json` for Node.js `.csproj` for .NET or `VERSION` for HTML.
 - must have Dockerfile
-- if tests are to be run, `docker-compose.test.yaml` must exist to run tests with exit on complete
+- if tests are to be run, `compose.test.yaml` must exist to run tests with exit on complete
 - Azure DevOps must be setup with connections to GitHub
 
 ### Steps
 - set build variables
-- run containerised tests if `docker-compose.test.yaml` exists.
+- run containerised tests if `compose.test.yaml` exists.
 - determine version for build assets
 - build container image
 - publish container image to DockerHub tagged with version
