@@ -67,6 +67,10 @@ jobs:
           $repo = '$(Build.Repository.Name)'.Split('/')[-1]
           Write-Host "##vso[task.setvariable variable=repo]$repo"
 
+    - script: |
+        chmod -R a+rX .
+      displayName: Fix file permissions for Docker containers
+
     - task: PowerShell@2
       displayName: Set variables
       inputs:
@@ -144,12 +148,6 @@ jobs:
         docker compose -f compose.yaml -f compose.test.yaml -p $(repo)-test-$(Build.BuildId) build
       displayName: Build test image
       condition: and(succeeded(), eq(variables.testFileExists, true))
-
-    - script: |
-        pwd
-        ls -l ./package.json
-        ls -l /azp/_work/1/s/package.json
-      displayName: Debug package.json path
 
     - script: |
         docker compose -f compose.yaml -f compose.test.yaml -p $(repo)-test-$(Build.BuildId) run --rm $(repo)
