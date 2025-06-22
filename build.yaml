@@ -272,7 +272,7 @@ jobs:
     name: Kubernetes
   workspace:
     clean: all
-    steps:
+  steps:
 
     - script: |
         helm repo add lynxmagnus http://$(helmRepository)
