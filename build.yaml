@@ -127,11 +127,6 @@ jobs:
           Write-Host "##vso[task.setvariable variable=targetFramework;]$csprojVersion"
       condition: and(succeeded(), eq('${{ parameters.framework }}', 'net'))
 
-    - task: HelmInstaller@1
-      displayName: Install Helm
-      inputs:
-        helmVersionToInstall: 'latest'
-
     - script: |
         helm dependency update $(helmChartPath)
         helm lint $(helmChartPath)
