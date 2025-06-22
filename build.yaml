@@ -53,7 +53,7 @@ jobs:
 - job: Build
 
   pool:
-    vmImage: ubuntu-latest
+    name: Kubernetes
 
   workspace:
     clean: all
