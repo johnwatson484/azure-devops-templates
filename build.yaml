@@ -67,10 +67,6 @@ jobs:
           $repo = '$(Build.Repository.Name)'.Split('/')[-1]
           Write-Host "##vso[task.setvariable variable=repo]$repo"
 
-    - script: |
-        chmod -R a+rX .
-      displayName: Fix file permissions for Docker containers
-
     - task: PowerShell@2
       displayName: Set variables
       inputs:
@@ -130,6 +126,11 @@ jobs:
           $csprojVersion = ([xml](Get-Content '${{ parameters.project }}/${{ parameters.project }}.csproj')).Project.PropertyGroup.TargetFramework
           Write-Host "##vso[task.setvariable variable=targetFramework;]$csprojVersion"
       condition: and(succeeded(), eq('${{ parameters.framework }}', 'net'))
+
+    - task: HelmInstaller@1
+      displayName: Install Helm
+      inputs:
+        helmVersionToInstall: 'latest'
 
     - script: |
         helm dependency update $(helmChartPath)
