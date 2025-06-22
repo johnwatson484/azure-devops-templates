@@ -146,6 +146,11 @@ jobs:
       condition: and(succeeded(), eq(variables.testFileExists, true))
 
     - script: |
+        ls -l
+      displayName: List files
+      condition: and(succeeded(), eq(variables.testFileExists, true))
+
+    - script: |
         docker compose -f compose.yaml -f compose.test.yaml -p $(repo)-test-$(Build.BuildId) run --rm $(repo)
       displayName: Run tests
       condition: and(succeeded(), eq(variables.testFileExists, true))
