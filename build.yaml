@@ -146,9 +146,10 @@ jobs:
       condition: and(succeeded(), eq(variables.testFileExists, true))
 
     - script: |
-        ls -l
-      displayName: List files
-      condition: and(succeeded(), eq(variables.testFileExists, true))
+        pwd
+        ls -l ./package.json
+        ls -l /azp/_work/1/s/package.json
+      displayName: Debug package.json path
 
     - script: |
         docker compose -f compose.yaml -f compose.test.yaml -p $(repo)-test-$(Build.BuildId) run --rm $(repo)
