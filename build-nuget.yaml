@@ -15,10 +15,6 @@ variables:
     value: false
   - name: version
     value:
-  - name: targetFramework
-    value:
-  - name: sonarImageVersion
-    value:
 
 jobs:
 - job:
@@ -37,20 +33,27 @@ jobs:
           $csprojVersion = ([xml](Get-Content '${{ parameters.project }}/${{ parameters.project }}.csproj')).Project.PropertyGroup.Version
           Write-Host "##vso[task.setvariable variable=version;]$csprojVersion"
 
-    - task: PowerShell@2
-      displayName: Set target framework
-      inputs:
-        targetType: 'inline'
-        script: |
-          $csprojVersion = ([xml](Get-Content '${{ parameters.project }}/${{ parameters.project }}.csproj')).Project.PropertyGroup.TargetFramework
-          Write-Host "##vso[task.setvariable variable=targetFramework;]$csprojVersion"
-
     - task: DotNetCoreCLI@2
       displayName: Restore
       inputs:
         command: restore
         arguments: '--configuration Release'
         restoreSolution: '**/*.sln'
+
+    - script: |
+        dotnet tool install --global dotnet-sonarscanner
+      displayName: Install dotnet-sonarscanner
+      condition: and(succeeded(), eq('${{ parameters.sonarcloud }}', true))
+
+    - script: |
+        export PATH="$PATH:$HOME/.dotnet/tools"
+        dotnet sonarscanner begin \
+          /k:"johnwatson484_${{ parameters.repo }}" \
+          /o:"johnwatson484" \
+          /d:sonar.token=$(token) \
+          /d:sonar.host.url="https://sonarcloud.io"
+      displayName: SonarCloud begin
+      condition: and(succeeded(), eq('${{ parameters.sonarcloud }}', true))
 
     - task: DotNetCoreCLI@2
       displayName: Build
@@ -59,28 +62,10 @@ jobs:
         arguments: '--configuration Release'
         projects: '**/*.sln'
 
-    - task: PowerShell@2
-      displayName: Set Sonar image version
-      inputs:
-        targetType: 'inline'
-        script: |
-          switch ("$(targetFramework)")
-          {
-            "netcoreapp3.1" { $tag = "1.2.3-dotnet3.1"; Break }
-            "net6.0" { $tag = "1.5.0-dotnet6.0"; Break }
-            "net8.0" { $tag = "1.6.0-dotnet8.0"; Break }
-          }
-          Write-Host "##vso[task.setvariable variable=sonarImageVersion;]$tag"
-
     - script: |
-        cd $(Agent.BuildDirectory)/s/${{ parameters.repo }}
-        docker run \
-          -v $(pwd)/:/home/dotnet/project \
-          -e SONAR_PROJECT_KEY=johnwatson484_${{ parameters.repo }} \
-          -e SONAR_TOKEN=$(token) \
-          -e SONAR_ORGANIZATION_KEY=johnwatson484 \
-          defradigital/ffc-dotnet-core-sonar:$(sonarImageVersion)
-      displayName: SonarCloud analysis (.NET)
+        export PATH="$PATH:$HOME/.dotnet/tools"
+        dotnet sonarscanner end /d:sonar.token=$(token)
+      displayName: SonarCloud end
       condition: and(succeeded(), eq('${{ parameters.sonarcloud }}', true))
 
     - script: |

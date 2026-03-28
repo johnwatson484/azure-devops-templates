@@ -54,12 +54,11 @@ Current version: see [VERSION](../VERSION) (semantic versioning, currently `2.4.
 - Default Helm chart path: `helm/<name>`; default namespace: `default`.
 
 ### SonarCloud (.NET only)
-- Uses Docker image `defradigital/ffc-dotnet-core-sonar` with framework-mapped tags:
-  - `netcoreapp3.1` → `1.2.3-dotnet3.1`
-  - `net6.0` → `1.5.0-dotnet6.0`
-  - `net8.0` → `1.6.0-dotnet8.0`
+- Uses `dotnet-sonarscanner` global tool installed at runtime — no Docker image dependency.
+- Steps: install tool → `sonarscanner begin` → `dotnet build` → `sonarscanner end`.
+- Supports any .NET version (no per-version configuration required).
 - Controlled by `sonarcloud` boolean parameter (default `true`).
-- Credentials come from `SonarCloud` variable group.
+- Credentials come from `SonarCloud` variable group (`$(token)`).
 
 ### Variable groups
 - `SonarCloud` — SonarCloud token/org/project credentials.

@@ -29,10 +29,6 @@ variables:
     value: false
   - name: version
     value:
-  - name: targetFramework
-    value:
-  - name: sonarImageVersion
-    value:
   - name: containerRepository
     value:
 
@@ -97,15 +93,6 @@ jobs:
       condition: and(succeeded(), ne('${{ parameters.framework }}', 'net'), ne('${{ parameters.framework }}', 'node'))
 
     - task: PowerShell@2
-      displayName: Set target framework (.NET)
-      inputs:
-        targetType: 'inline'
-        script: |
-          $csprojVersion = ([xml](Get-Content '${{ parameters.project }}/${{ parameters.project }}.csproj')).Project.PropertyGroup.TargetFramework
-          Write-Host "##vso[task.setvariable variable=targetFramework;]$csprojVersion"
-      condition: and(succeeded(), eq('${{ parameters.framework }}', 'net'))
-
-    - task: PowerShell@2
       displayName: Check for tests
       inputs:
         targetType: 'inline'
@@ -159,29 +146,35 @@ jobs:
           latest
         addPipelineData: false
 
-    - task: PowerShell@2
-      displayName: Set Sonar image version (.NET)
-      inputs:
-        targetType: 'inline'
-        script: |
-          switch ("$(targetFramework)")
-          {
-            "netcoreapp3.1" { $tag = "1.2.3-dotnet3.1"; Break }
-            "net6.0" { $tag = "1.4.0-dotnet6.0"; Break }
-          }
-          Write-Host "##vso[task.setvariable variable=sonarImageVersion;]$tag"
-      condition: and(succeeded(), eq('${{ parameters.framework }}', 'net'))
+    - script: |
+        dotnet tool install --global dotnet-sonarscanner
+      displayName: Install dotnet-sonarscanner (.NET)
+      condition: and(succeeded(), eq('${{ parameters.framework }}', 'net'), eq('${{ parameters.sonarcloud }}', true))
 
     - script: |
-        cd $(Agent.BuildDirectory)/s/$(repo)
-        docker run \
-          -v $(pwd)/:/home/dotnet/project \
-          -e SONAR_PROJECT_KEY=johnwatson484_$(repo) \
-          -e SONAR_TOKEN=$(token) \
-          -e SONAR_ORGANIZATION_KEY=johnwatson484 \
-          --rm \
-          defradigital/ffc-dotnet-core-sonar:$(sonarImageVersion)
-      displayName: SonarCloud analysis (.NET)
+        dotnet restore ${{ parameters.project }}/${{ parameters.project }}.csproj
+      displayName: dotnet restore (.NET)
+      condition: and(succeeded(), eq('${{ parameters.framework }}', 'net'), eq('${{ parameters.sonarcloud }}', true))
+
+    - script: |
+        export PATH="$PATH:$HOME/.dotnet/tools"
+        dotnet sonarscanner begin \
+          /k:"johnwatson484_$(repo)" \
+          /o:"johnwatson484" \
+          /d:sonar.token=$(token) \
+          /d:sonar.host.url="https://sonarcloud.io"
+      displayName: SonarCloud begin (.NET)
+      condition: and(succeeded(), eq('${{ parameters.framework }}', 'net'), eq('${{ parameters.sonarcloud }}', true))
+
+    - script: |
+        dotnet build ${{ parameters.project }}/${{ parameters.project }}.csproj -c Release
+      displayName: dotnet build (.NET)
+      condition: and(succeeded(), eq('${{ parameters.framework }}', 'net'), eq('${{ parameters.sonarcloud }}', true))
+
+    - script: |
+        export PATH="$PATH:$HOME/.dotnet/tools"
+        dotnet sonarscanner end /d:sonar.token=$(token)
+      displayName: SonarCloud end (.NET)
       condition: and(succeeded(), eq('${{ parameters.framework }}', 'net'), eq('${{ parameters.sonarcloud }}', true))
 
     - task: PowerShell@2
