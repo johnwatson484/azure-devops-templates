@@ -10,7 +10,6 @@ parameters:
   default: true
 
 variables:
-  - group: SonarCloud
   - name: releaseExists
     value: false
   - name: version
@@ -40,19 +39,13 @@ jobs:
         arguments: '--configuration Release'
         restoreSolution: '**/*.sln'
 
-    - script: |
-        dotnet tool install --global dotnet-sonarscanner
-      displayName: Install dotnet-sonarscanner
-      condition: and(succeeded(), eq('${{ parameters.sonarcloud }}', true))
-
-    - script: |
-        export PATH="$PATH:$HOME/.dotnet/tools"
-        dotnet sonarscanner begin \
-          /k:"johnwatson484_${{ parameters.repo }}" \
-          /o:"johnwatson484" \
-          /d:sonar.token="$(token)" \
-          /d:sonar.host.url="https://sonarcloud.io"
-      displayName: SonarCloud begin
+    - task: SonarCloudPrepare@3
+      displayName: SonarCloud prepare
+      inputs:
+        SonarCloud: 'SonarCloud'
+        organization: 'johnwatson484'
+        scannerMode: 'MSBuild'
+        projectKey: 'johnwatson484_${{ parameters.repo }}'
       condition: and(succeeded(), eq('${{ parameters.sonarcloud }}', true))
 
     - task: DotNetCoreCLI@2
@@ -62,10 +55,8 @@ jobs:
         arguments: '--configuration Release'
         projects: '**/*.sln'
 
-    - script: |
-        export PATH="$PATH:$HOME/.dotnet/tools"
-        dotnet sonarscanner end /d:sonar.token="$(token)"
-      displayName: SonarCloud end
+    - task: SonarCloudAnalyze@3
+      displayName: SonarCloud analyze
       condition: and(succeeded(), eq('${{ parameters.sonarcloud }}', true))
 
     - script: |

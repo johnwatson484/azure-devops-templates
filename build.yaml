@@ -24,7 +24,6 @@ parameters:
   default: false
 
 variables:
-  - group: SonarCloud
   - group: Helm
   - name: repo
     value: ${{ parameters.name }}
@@ -195,35 +194,22 @@ jobs:
         fi
       displayName: Publish Helm chart to Chart Museum
 
-    - script: |
-        dotnet tool install --global dotnet-sonarscanner
-      displayName: Install dotnet-sonarscanner (.NET)
-      condition: and(succeeded(), eq('${{ parameters.framework }}', 'net'), eq('${{ parameters.sonarcloud }}', true))
-
-    - script: |
-        dotnet restore ${{ parameters.project }}/${{ parameters.project }}.csproj
-      displayName: Run dotnet restore (.NET)
-      condition: and(succeeded(), eq('${{ parameters.framework }}', 'net'), eq('${{ parameters.sonarcloud }}', true))
-
-    - script: |
-        export PATH="$PATH:$HOME/.dotnet/tools"
-        dotnet sonarscanner begin \
-          /k:"johnwatson484_$(repo)" \
-          /o:"johnwatson484" \
-          /d:sonar.token="$(token)" \
-          /d:sonar.host.url="https://sonarcloud.io"
-      displayName: SonarCloud begin (.NET)
+    - task: SonarCloudPrepare@3
+      displayName: SonarCloud prepare (.NET)
+      inputs:
+        SonarCloud: 'SonarCloud'
+        organization: 'johnwatson484'
+        scannerMode: 'MSBuild'
+        projectKey: 'johnwatson484_$(repo)'
       condition: and(succeeded(), eq('${{ parameters.framework }}', 'net'), eq('${{ parameters.sonarcloud }}', true))
 
     - script: |
         dotnet build ${{ parameters.project }}/${{ parameters.project }}.csproj -c Release
-      displayName: Run dotnet build (.NET)
+      displayName: dotnet build (.NET)
       condition: and(succeeded(), eq('${{ parameters.framework }}', 'net'), eq('${{ parameters.sonarcloud }}', true))
 
-    - script: |
-        export PATH="$PATH:$HOME/.dotnet/tools"
-        dotnet sonarscanner end /d:sonar.token="$(token)"
-      displayName: SonarCloud end (.NET)
+    - task: SonarCloudAnalyze@3
+      displayName: SonarCloud analyze (.NET)
       condition: and(succeeded(), eq('${{ parameters.framework }}', 'net'), eq('${{ parameters.sonarcloud }}', true))
 
     - task: PowerShell@2
