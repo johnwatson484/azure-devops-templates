@@ -150,13 +150,13 @@ jobs:
       inputs:
         SonarCloud: 'SonarCloud'
         organization: 'johnwatson484'
-        scannerMode: 'MSBuild'
+        scannerMode: 'dotnet'
         projectKey: 'johnwatson484_$(repo)'
       condition: and(succeeded(), eq('${{ parameters.framework }}', 'net'), eq('${{ parameters.sonarcloud }}', true))
 
     - script: |
         dotnet build ${{ parameters.project }}/${{ parameters.project }}.csproj -c Release
-      displayName: dotnet build (.NET)
+      displayName: Run dotnet build (.NET)
       condition: and(succeeded(), eq('${{ parameters.framework }}', 'net'), eq('${{ parameters.sonarcloud }}', true))
 
     - task: SonarCloudAnalyze@3

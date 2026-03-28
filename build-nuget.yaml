@@ -44,7 +44,7 @@ jobs:
       inputs:
         SonarCloud: 'SonarCloud'
         organization: 'johnwatson484'
-        scannerMode: 'MSBuild'
+        scannerMode: 'dotnet'
         projectKey: 'johnwatson484_${{ parameters.repo }}'
       condition: and(succeeded(), eq('${{ parameters.sonarcloud }}', true))
 
