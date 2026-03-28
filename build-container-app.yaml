@@ -153,7 +153,7 @@ jobs:
 
     - script: |
         dotnet restore ${{ parameters.project }}/${{ parameters.project }}.csproj
-      displayName: dotnet restore (.NET)
+      displayName: Run dotnet restore (.NET)
       condition: and(succeeded(), eq('${{ parameters.framework }}', 'net'), eq('${{ parameters.sonarcloud }}', true))
 
     - script: |
@@ -161,19 +161,19 @@ jobs:
         dotnet sonarscanner begin \
           /k:"johnwatson484_$(repo)" \
           /o:"johnwatson484" \
-          /d:sonar.token=$(token) \
+          /d:sonar.token="$(token)" \
           /d:sonar.host.url="https://sonarcloud.io"
       displayName: SonarCloud begin (.NET)
       condition: and(succeeded(), eq('${{ parameters.framework }}', 'net'), eq('${{ parameters.sonarcloud }}', true))
 
     - script: |
         dotnet build ${{ parameters.project }}/${{ parameters.project }}.csproj -c Release
-      displayName: dotnet build (.NET)
+      displayName: Run dotnet build (.NET)
       condition: and(succeeded(), eq('${{ parameters.framework }}', 'net'), eq('${{ parameters.sonarcloud }}', true))
 
     - script: |
         export PATH="$PATH:$HOME/.dotnet/tools"
-        dotnet sonarscanner end /d:sonar.token=$(token)
+        dotnet sonarscanner end /d:sonar.token="$(token)"
       displayName: SonarCloud end (.NET)
       condition: and(succeeded(), eq('${{ parameters.framework }}', 'net'), eq('${{ parameters.sonarcloud }}', true))
 

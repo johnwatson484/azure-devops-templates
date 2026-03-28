@@ -50,7 +50,7 @@ jobs:
         dotnet sonarscanner begin \
           /k:"johnwatson484_${{ parameters.repo }}" \
           /o:"johnwatson484" \
-          /d:sonar.token=$(token) \
+          /d:sonar.token="$(token)" \
           /d:sonar.host.url="https://sonarcloud.io"
       displayName: SonarCloud begin
       condition: and(succeeded(), eq('${{ parameters.sonarcloud }}', true))
@@ -64,7 +64,7 @@ jobs:
 
     - script: |
         export PATH="$PATH:$HOME/.dotnet/tools"
-        dotnet sonarscanner end /d:sonar.token=$(token)
+        dotnet sonarscanner end /d:sonar.token="$(token)"
       displayName: SonarCloud end
       condition: and(succeeded(), eq('${{ parameters.sonarcloud }}', true))
 
