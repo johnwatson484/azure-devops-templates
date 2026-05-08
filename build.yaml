@@ -4,6 +4,9 @@ parameters:
 - name: containerRepository
   type: string
   default:
+- name: helmChartPath
+  type: string
+  default:
 - name: framework
   type: string
   default: node
@@ -13,6 +16,12 @@ parameters:
 - name: project
   type: string
   default:
+- name: namespace
+  type: string
+  default: default
+- name: deploy
+  type: boolean
+  default: false
 
 variables:
   - name: repo
