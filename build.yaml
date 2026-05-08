@@ -4,9 +4,6 @@ parameters:
 - name: containerRepository
   type: string
   default:
-- name: helmChartPath
-  type: string
-  default:
 - name: framework
   type: string
   default: node
@@ -16,15 +13,8 @@ parameters:
 - name: project
   type: string
   default:
-- name: namespace
-  type: string
-  default: default
-- name: deploy
-  type: boolean
-  default: false
 
 variables:
-  - group: Helm
   - name: repo
     value: ${{ parameters.name }}
   - name: testFileExists
@@ -35,14 +25,8 @@ variables:
     value: false
   - name: version
     value:
-  - name: helmRepo
-    value: helm-charts
   - name: containerRepository
     value:
-  - name: helmChartPath
-    value:
-  - name: helmRepository
-    value: services.lynxmagnus.com:8080
 
 jobs:
 - job: Build
@@ -111,16 +95,6 @@ jobs:
           Write-Host "##vso[task.setvariable variable=version;]$fileVersion"
       condition: and(succeeded(), ne('${{ parameters.framework }}', 'net'), ne('${{ parameters.framework }}', 'node'))
 
-    - task: HelmInstaller@1
-      displayName: Install Helm
-      inputs:
-        helmVersionToInstall: 'latest'
-
-    - script: |
-        helm dependency update $(helmChartPath)
-        helm lint $(helmChartPath)
-      displayName: Helm lint
-
     - task: PowerShell@2
       displayName: Check for tests
       inputs:
@@ -175,25 +149,6 @@ jobs:
           latest
         addPipelineData: false
 
-    - script: |
-        sed -i -e 's/image: .*/image: johnwatson484\/${{ parameters.name }}:$(version)/' $(helmChartPath)/values.yaml
-      displayName: Update Helm values
-
-    - script: |
-        helm package $(helmChartPath) --version $(version) --destination $(helmRepo) --dependency-update
-      displayName: Package Helm
-
-    - script: |
-        result=$(curl -v -s -o /dev/null -w "%{http_code}" --data-binary "@$(helmRepo)/$(repo)-$(version).tgz" http://$(username):$(password)@$(helmRepository)/api/charts)
-        if [ "$result" == "201" ]
-        then
-          echo "OK"
-        else
-          echo $result
-          exit 1
-        fi
-      displayName: Publish Helm chart to Chart Museum
-
     - task: SonarCloudPrepare@3
       displayName: SonarCloud prepare (.NET)
       inputs:
@@ -241,34 +196,3 @@ jobs:
         echo "##vso[task.setvariable variable=version;isOutput=true]$(version)"
       name: SetOutputVars
       displayName: Set output variables
-
-- job: Deploy
-  dependsOn: Build
-  variables:
-    repo: $[ dependencies.Build.outputs['SetOutputVars.repo'] ]
-    version: $[ dependencies.Build.outputs['SetOutputVars.version'] ]
-  pool:
-    name: Kubernetes
-  workspace:
-    clean: all
-  steps:
-
-    - script: |
-        helm repo add lynxmagnus http://$(helmRepository)
-        helm repo update
-      displayName: 'Add Helm repository'
-      condition: and(succeeded(), eq(${{ parameters.deploy }}, true))
-
-    - task: HelmDeploy@1
-      displayName: Deploy to Kubernetes
-      inputs:
-        connectionType: 'Kubernetes Service Connection'
-        kubernetesServiceConnection: 'Contabo'
-        namespace: '${{ parameters.namespace }}'
-        command: 'upgrade'
-        chartType: 'Name'
-        chartName: 'lynxmagnus/$(repo)'
-        chartVersion: '$(version)'
-        releaseName: '$(repo)'
-        arguments: '--create-namespace --atomic'
-      condition: and(succeeded(), eq(${{ parameters.deploy }}, true))
